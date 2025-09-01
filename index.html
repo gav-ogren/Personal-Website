@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Friend Reminder</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: auto; }
+    h1 { text-align: center; }
+    input, button { padding: 8px; margin: 5px 0; width: 100%; }
+    ul { list-style-type: none; padding: 0; }
+    li { padding: 5px 0; border-bottom: 1px solid #ccc; display: flex; justify-content: space-between; align-items: center; }
+    .date { font-size: 0.9em; color: #666; }
+  </style>
+</head>
+<body>
+  <h1>Friend Reminder</h1>
+
+  <input type="text" id="friendName" placeholder="Friend's Name">
+  <input type="date" id="lastContact" placeholder="Last Contact Date">
+  <button id="addFriend">Add / Update Friend</button>
+
+  <h2>Friend List</h2>
+  <ul id="friendList"></ul>
+
+  <script>
+    const friendListEl = document.getElementById('friendList');
+    const nameInput = document.getElementById('friendName');
+    const dateInput = document.getElementById('lastContact');
+    const addBtn = document.getElementById('addFriend');
+
+    // Load friends from LocalStorage
+    let friends = JSON.parse(localStorage.getItem('friends') || '[]');
+
+    function renderList() {
+      friendListEl.innerHTML = '';
+      friends.forEach((friend, index) => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+          <span>${friend.name} <span class="date">(${friend.lastContact})</span></span>
+          <button onclick="removeFriend(${index})">Remove</button>
+        `;
+        friendListEl.appendChild(li);
+      });
+    }
+
+    function saveFriends() {
+      localStorage.setItem('friends', JSON.stringify(friends));
+    }
+
+    addBtn.addEventListener('click', () => {
+      const name = nameInput.value.trim();
+      const lastContact = dateInput.value;
+      if (!name || !lastContact) return alert('Enter name and date');
+
+      // Update if exists
+      const existing = friends.find(f => f.name.toLowerCase() === name.toLowerCase());
+      if (existing) {
+        existing.lastContact = lastContact;
+      } else {
+        friends.push({ name, lastContact });
+      }
+      saveFriends();
+      renderList();
+      nameInput.value = '';
+      dateInput.value = '';
+    });
+
+    window.removeFriend = (index) => {
+      friends.splice(index, 1);
+      saveFriends();
+      renderList();
+    }
+
+    renderList();
+  </script>
+</body>
+</html>
