@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Weather — Widget (Horizontal)</title>
-  <meta name="description" content="Self-hosted weather widget (Open-Meteo). Horizontal layout for Notion embeds.">
+  <title>Weather — Widget (Horizontal, Tunable)</title>
+  <meta name="description" content="Self-hosted weather widget (Open-Meteo). Horizontal layout for Notion embeds with tunable width/size.">
   <style>
     :root {
       --bg: #0b0c10;
@@ -17,6 +17,7 @@
       --accent-2: #6ea8fe;
       --radius: 16px;
       --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --maxw: 720px; /* default max width; override with ?w=520 */
     }
     @media (prefers-color-scheme: light) {
       :root {
@@ -40,31 +41,46 @@
       color:var(--text);
       font:500 15px/1.6 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial;
     }
-    .wrap{width:min(980px, 98%); margin-inline:auto; padding:.6rem}
+    .wrap{width:min(var(--maxw), 98%); margin-inline:auto; padding:.6rem}
     .card{background:var(--card); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden}
-    .bar{display:grid; grid-template-columns:auto auto 1fr; align-items:center; gap:1rem; padding:.75rem 1rem}
-    @media (max-width:720px){.bar{grid-template-columns:auto 1fr; row-gap:.5rem}}
-    .left{display:flex; align-items:center; gap:.8rem}
-    .icon{width:64px; height:64px}
-    .temp{font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight:900; line-height:1}
-    .cond{color:var(--muted); font-size:.95rem}
-    .meta{display:flex; flex-direction:column; gap:.4rem; min-width: 240px}
-    .loc{display:flex; align-items:center; gap:.5rem; font-weight:700}
+    .bar{display:grid; grid-template-columns:auto auto 1fr; align-items:center; gap:.75rem; padding:.6rem .9rem}
+    @media (max-width:680px){.bar{grid-template-columns:auto 1fr; row-gap:.5rem}}
+    .left{display:flex; align-items:center; gap:.6rem}
+    .icon{width:56px; height:56px}
+    .temp{font-size: clamp(1.6rem, 3.6vw, 2.2rem); font-weight:900; line-height:1}
+    .cond{color:var(--muted); font-size:.92rem}
+    .meta{display:flex; flex-direction:column; gap:.35rem; min-width: 180px}
+    .loc{display:flex; align-items:center; gap:.45rem; font-weight:700}
     .dot{width:10px; height:10px; border-radius:50%; background:linear-gradient(135deg,var(--accent),var(--accent-2))}
     .time{color:var(--muted); font-weight:600}
-    .pills{display:flex; flex-wrap:wrap; gap:.4rem}
-    .pill{display:inline-flex; align-items:center; gap:.35rem; padding:.25rem .5rem; border:1px solid var(--border); border-radius:999px; color:var(--muted); font-size:.9rem}
-    .stats{display:flex; gap:.6rem; align-items:center}
-    .stat{background:rgba(255,255,255,.02); border:1px solid var(--border); border-radius:12px; padding:.45rem .6rem; font-size:.95rem}
-    .stat b{margin-right:.35rem; font-size:.9rem; color:var(--muted)}
-    .days{display:flex; gap:.5rem; overflow-x:auto; -webkit-overflow-scrolling:touch; padding:.25rem .25rem}
-    .day{min-width:76px; background:rgba(255,255,255,.02); border:1px solid var(--border); border-radius:12px; padding:.5rem; text-align:center}
-    .day .d{color:var(--muted); font-size:.85rem}
+    .pills{display:flex; flex-wrap:wrap; gap:.35rem}
+    .pill{display:inline-flex; align-items:center; gap:.3rem; padding:.2rem .45rem; border:1px solid var(--border); border-radius:999px; color:var(--muted); font-size:.85rem}
+    .stats{display:flex; gap:.45rem; align-items:center}
+    .stat{background:rgba(255,255,255,.02); border:1px solid var(--border); border-radius:12px; padding:.35rem .5rem; font-size:.9rem}
+    .stat b{margin-right:.3rem; font-size:.85rem; color:var(--muted)}
+    .days{display:flex; gap:.4rem; overflow-x:auto; -webkit-overflow-scrolling:touch; padding:.2rem .2rem}
+    .day{min-width:68px; background:rgba(255,255,255,.02); border:1px solid var(--border); border-radius:12px; padding:.4rem; text-align:center}
+    .day .d{color:var(--muted); font-size:.8rem}
     .day .hi{font-weight:800}
-    .day svg{width:36px; height:36px}
+    .day svg{width:32px; height:32px}
+    /* Compact: hide stats & days */
     .compact .stats, .compact .days{display:none}
-    .compact .icon{width:56px; height:56px}
-    .compact .bar{padding:.6rem .8rem}
+    .compact .icon{width:52px; height:52px}
+    .compact .bar{padding:.5rem .7rem}
+    /* Small size tweaks */
+    #root.sm .icon{width:48px; height:48px}
+    #root.sm .temp{font-size: clamp(1.4rem, 3.2vw, 1.9rem)}
+    #root.sm .pill{font-size:.8rem; padding:.18rem .4rem}
+    #root.sm .meta{min-width: 150px}
+    #root.sm .day{min-width:60px}
+    /* Extra-small: even tighter and limit pills to H/L only */
+    #root.xs .icon{width:40px; height:40px}
+    #root.xs .temp{font-size: clamp(1.25rem, 3vw, 1.6rem)}
+    #root.xs .meta{min-width:auto}
+    #root.xs .pills .pill:nth-child(n+3){display:none} /* show only first two pills (H/L) */
+    #root.xs .cond{display:none} /* hide condition text if needed for width */
+    #root.xs .days{display:none}
+    #root.xs .stats{display:none}
     .embed-fit{max-width:100%; border-radius:var(--radius); overflow:hidden}
   </style>
 </head>
@@ -105,8 +121,14 @@
     var lon = parseFloat(params.get("lon")) || DEFAULT.lon;
     var label = params.get("label") || DEFAULT.label;
     var compact = params.get("compact") === "1";
+    var size = (params.get("size") || "").toLowerCase(); // "", "sm", "xs"
+    var w = parseInt(params.get("w"), 10);
 
-    if (compact) document.getElementById("root").classList.add("compact");
+    if (!isNaN(w) && w > 240) document.documentElement.style.setProperty("--maxw", w + "px");
+    var root = document.getElementById("root");
+    if (compact) root.classList.add("compact");
+    if (size === "sm") root.classList.add("sm");
+    if (size === "xs") root.classList.add("xs");
 
     function $(id){ return document.getElementById(id); }
     function fmtTemp(c){ return useF ? Math.round(c * 9/5 + 32) : Math.round(c); }
@@ -181,25 +203,25 @@
       var res = await fetch(url);
       var data = await res.json();
 
-      $("place").textContent = lbl;
-      $("unit").textContent = useF ? "F" : "C";
-      $("time").textContent = new Date().toLocaleString([], { hour: "2-digit", minute:"2-digit" });
+      document.getElementById("place").textContent = lbl;
+      document.getElementById("unit").textContent = useF ? "F" : "C";
+      document.getElementById("time").textContent = new Date().toLocaleString([], { hour: "2-digit", minute:"2-digit" });
 
       var c = data.current;
-      $("t").textContent = fmtTemp(c.temperature_2m);
-      $("feels").textContent = fmtTemp(c.apparent_temperature);
-      $("hum").textContent = Math.round(c.relative_humidity_2m);
-      $("wind").textContent = mph(c.wind_speed_10m);
-      $("cond").textContent = codeText(c.weather_code);
-      $("icon").innerHTML = iconSVG(c.weather_code, !!c.is_day);
+      document.getElementById("t").textContent = fmtTemp(c.temperature_2m);
+      document.getElementById("feels").textContent = fmtTemp(c.apparent_temperature);
+      document.getElementById("hum").textContent = Math.round(c.relative_humidity_2m);
+      document.getElementById("wind").textContent = mph(c.wind_speed_10m);
+      document.getElementById("cond").textContent = codeText(c.weather_code);
+      document.getElementById("icon").innerHTML = iconSVG(c.weather_code, !!c.is_day);
 
       var d = data.daily;
-      $("hi").textContent = fmtTemp(d.temperature_2m_max[0]);
-      $("lo").textContent = fmtTemp(d.temperature_2m_min[0]);
-      $("pop").textContent = (d.precipitation_probability_mean[0] != null ? d.precipitation_probability_mean[0] : 0);
+      document.getElementById("hi").textContent = fmtTemp(d.temperature_2m_max[0]);
+      document.getElementById("lo").textContent = fmtTemp(d.temperature_2m_min[0]);
+      document.getElementById("pop").textContent = (d.precipitation_probability_mean[0] != null ? d.precipitation_probability_mean[0] : 0);
 
       var dayNames = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-      var container = $("days");
+      var container = document.getElementById("days");
       container.innerHTML = "";
       for (var i=0; i<Math.min(5, d.time.length); i++){
         var dt = new Date(d.time[i]);
