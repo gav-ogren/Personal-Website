@@ -1,78 +1,272 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Friend Reminder</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gavin Ogren — Home</title>
+  <meta name="description" content="Portfolio home for Gavin Ogren — developer, builder, and creator in Arizona." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%2309b6a2'/%3E%3Ctext x='50' y='60' font-size='54' text-anchor='middle' fill='white' font-family='Segoe UI, Roboto, Arial, sans-serif'%3EG%3C/text%3E%3C/svg%3E" />
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: auto; }
-    h1 { text-align: center; }
-    input, button { padding: 8px; margin: 5px 0; width: 100%; }
-    ul { list-style-type: none; padding: 0; }
-    li { padding: 5px 0; border-bottom: 1px solid #ccc; display: flex; justify-content: space-between; align-items: center; }
-    .date { font-size: 0.9em; color: #666; }
+    /* =====================
+       Design Tokens
+    ====================== */
+    :root {
+      --bg: #0b0c10;
+      --surface: #111217;
+      --card: #151822;
+      --text: #e9ecf1;
+      --muted: #b6bdc7;
+      --border: #262a36;
+      --accent: #09b6a2; /* teal */
+      --accent-2: #6ea8fe; /* blue */
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius: 16px;
+      --grid-gap: clamp(0.75rem, 1vw, 1rem);
+    }
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg: #f6f7fb;
+        --surface: #ffffff;
+        --card: #ffffff;
+        --text: #0f172a;
+        --muted: #3f4a5a;
+        --border: #e6e8ef;
+        --shadow: 0 10px 25px rgba(0,0,0,.08);
+      }
+    }
+
+    /* =====================
+       Base / Reset
+    ====================== */
+    *,*::before,*::after{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; background: radial-gradient(1200px 800px at 85% -10%, rgba(9,182,162,.15), transparent 60%),
+                               radial-gradient(1200px 800px at 10% 110%, rgba(110,168,254,.12), transparent 60%),
+                               var(--bg);
+      color:var(--text);
+      font: 500 16px/1.6 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+    }
+    img{max-width:100%; display:block}
+    a{color:inherit; text-decoration:none}
+    :focus-visible{outline: 2px solid var(--accent); outline-offset: 2px}
+
+    .wrap{width:min(1100px, 92%); margin-inline:auto}
+
+    /* =====================
+       Header / Nav
+    ====================== */
+    .skip {position: absolute; left: -9999px; top:auto}
+    .skip:focus {left: 1rem; top: 1rem; background: var(--surface); color: var(--text); padding:.6rem .8rem; border-radius: 10px; box-shadow: var(--shadow)}
+
+    header{
+      position: sticky; top:0; z-index: 10; backdrop-filter: blur(8px);
+      background: color-mix(in oklab, var(--bg) 70%, transparent);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav{display:flex; align-items:center; justify-content:space-between; padding:.9rem 0}
+    .brand{display:flex; align-items:center; gap:.6rem; font-weight: 800; letter-spacing:.4px}
+    .brand-badge{width:36px; height:36px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--accent-2)); display:grid; place-items:center; color:white; font-weight:900}
+    nav ul{display:flex; gap: clamp(.4rem, 2vw, 1rem); list-style:none; padding:0; margin:0}
+    nav a{padding:.5rem .75rem; border-radius: 999px; border:1px solid transparent}
+    nav a:hover{border-color: var(--border); background: color-mix(in oklab, var(--surface) 65%, transparent)}
+
+    /* =====================
+       Hero
+    ====================== */
+    .hero{display:grid; align-items:center; min-height: 72dvh; padding: clamp(2rem, 6vw, 5rem) 0}
+    .hero-grid{display:grid; grid-template-columns: 1.15fr .85fr; gap: clamp(1.2rem, 3vw, 2.5rem)}
+    @media (max-width: 900px){.hero-grid{grid-template-columns: 1fr}}
+
+    .eyebrow{display:inline-flex; align-items:center; gap:.5rem; font-size:.85rem; color:var(--muted); border:1px solid var(--border); padding:.4rem .7rem; border-radius:999px}
+    .eyebrow .dot{width:8px; height:8px; border-radius:50%; background: linear-gradient(135deg, var(--accent), var(--accent-2))}
+
+    h1{font-size: clamp(2rem, 6vw, 3.75rem); line-height:1.15; margin: .6rem 0}
+    .lead{font-size: clamp(1rem, 2vw, 1.15rem); color: var(--muted)}
+
+    .cta{margin-top: 1.2rem; display:flex; gap:.8rem; flex-wrap:wrap}
+    .btn{display:inline-flex; align-items:center; gap:.5rem; padding:.8rem 1rem; border-radius: 12px; border:1px solid var(--border); background: var(--surface); font-weight:700; transition: transform .2s ease}
+    .btn:hover{transform: translateY(-2px)}
+    .btn.primary{background: linear-gradient(135deg, var(--accent), var(--accent-2)); color:white; border-color: transparent}
+
+    .hero-art{position:relative; aspect-ratio: 4/3; border-radius: var(--radius); background: linear-gradient(180deg, color-mix(in oklab, var(--card) 80%, transparent), transparent),
+                                                   radial-gradient(600px 300px at 20% 0%, rgba(9,182,162,.25), transparent 60%),
+                                                   radial-gradient(600px 300px at 80% 100%, rgba(110,168,254,.25), transparent 60%),
+                                                   var(--card);
+              box-shadow: var(--shadow); overflow:hidden; border:1px solid var(--border)}
+    .orb{position:absolute; border-radius:50%; filter: blur(12px); opacity:.8}
+    .orb.one{width:180px; height:180px; left: -30px; top: -30px; background: rgba(9,182,162,.65)}
+    .orb.two{width:220px; height:220px; right: -20px; bottom: -40px; background: rgba(110,168,254,.55)}
+    .gridlines{position:absolute; inset:0; background-image: linear-gradient(to right, color-mix(in oklab, var(--border) 55%, transparent) 1px, transparent 1px),
+                                             linear-gradient(to bottom, color-mix(in oklab, var(--border) 55%, transparent) 1px, transparent 1px);
+               background-size: 40px 40px; opacity:.35; mask-image: radial-gradient(400px 300px at 50% 50%, black 40%, transparent 70%)}
+
+    /* =====================
+       Sections
+    ====================== */
+    section{padding: clamp(2rem, 5vw, 4rem) 0}
+    .section-title{font-size: clamp(1.4rem, 2.5vw, 2rem); margin: 0 0 .6rem}
+    .section-desc{color: var(--muted); margin:0 0 1.2rem}
+
+    /* Projects Grid */
+    .grid{display:grid; grid-template-columns: repeat(12, 1fr); gap: var(--grid-gap)}
+    .span-4{grid-column: span 4}
+    @media (max-width: 900px){.span-4{grid-column: span 6}}
+    @media (max-width: 640px){.span-4{grid-column: span 12}}
+
+    .card{background: var(--card); border:1px solid var(--border); border-radius: var(--radius); padding: 1rem; box-shadow: var(--shadow); display:flex; flex-direction:column; gap:.8rem; transition: transform .18s ease, border-color .2s ease}
+    .card:hover{transform: translateY(-4px); border-color: color-mix(in oklab, var(--accent) 30%, var(--border))}
+    .card .thumb{aspect-ratio: 16/9; border-radius: 12px; background: linear-gradient(135deg, rgba(9,182,162,.27), rgba(110,168,254,.27)); display:grid; place-items:center; color: #ffffffa8; font-weight:800; letter-spacing:.1em; border:1px dashed color-mix(in oklab, var(--border) 70%, transparent)}
+    .tag{display:inline-flex; align-items:center; gap:.35rem; font-size:.8rem; color:var(--muted); border:1px solid var(--border); padding:.25rem .5rem; border-radius:999px}
+
+    /* About */
+    .about{display:grid; grid-template-columns: .9fr 1.1fr; gap: clamp(1rem, 3vw, 2rem)}
+    @media (max-width: 900px){.about{grid-template-columns: 1fr}}
+    .avatar{width: 120px; height:120px; border-radius:50%; background: linear-gradient(135deg, var(--accent), var(--accent-2)); display:grid; place-items:center; color:white; font-weight:900; font-size:2.2rem; box-shadow: var(--shadow)}
+    .about .bubble{background: var(--card); border:1px solid var(--border); border-radius: var(--radius); padding:1rem}
+
+    /* Contact */
+    .contact{
+      background: linear-gradient(180deg, color-mix(in oklab, var(--surface) 80%, transparent), transparent), var(--surface);
+      border: 1px solid var(--border); border-radius: var(--radius); padding: 1.2rem; box-shadow: var(--shadow)
+    }
+
+    footer{padding:2rem 0; color:var(--muted); border-top:1px solid var(--border)}
+
+    /* Motion */
+    @media (prefers-reduced-motion: no-preference){
+      [data-reveal]{opacity:0; transform: translateY(14px); animation: rise .8s ease forwards;}
+      [data-reveal="1"]{animation-delay:.05s}
+      [data-reveal="2"]{animation-delay:.15s}
+      [data-reveal="3"]{animation-delay:.25s}
+      [data-reveal="4"]{animation-delay:.35s}
+      @keyframes rise{to{opacity:1; transform:none}}
+    }
   </style>
 </head>
 <body>
-  <h1>Friend Reminder</h1>
+  <a href="#main" class="skip">Skip to content</a>
+  <header>
+    <div class="wrap nav">
+      <a href="#home" class="brand" aria-label="Gavin home">
+        <span class="brand-badge" aria-hidden="true">G</span>
+        <span>Gavin Ogren</span>
+      </a>
+      <nav aria-label="Primary">
+        <ul>
+          <li><a style="margin-top: 40px;" #projects">Projects</a></li>
+          <li><a href="#about">About</a></li>
+          <li><a href="#contact">Contact</a></li>
+          <li><a class="btn" href="#resume">Resume</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
 
-  <input type="text" id="friendName" placeholder="Friend's Name">
-  <input type="date" id="lastContact" placeholder="Last Contact Date">
-  <button id="addFriend">Add / Update Friend</button>
+  <main id="main">
+    <!-- Hero -->
+    <section id="home" class="hero">
+      <div class="wrap hero-grid">
+        <div>
+          <span class="eyebrow" data-reveal="1"><span class="dot"></span> Developer • Builder • Arizona</span>
+          <h1 data-reveal="2">Hey, I’m Gavin — but friends call me <em title="Nickname">G‑SCRAP</em>.
+          <br />I build clean, fast experiences for the web.</h1>
+          <p class="lead" data-reveal="3">Full‑stack tinkerer focused on practical, delightful UI. I love turning ideas into shipped products and learning by building.</p>
+          <div class="cta" data-reveal="4">
+            <a class="btn primary" href="#projects">See Projects</a>
+            <a class="btn" href="#contact">Get in Touch</a>
+          </div>
+        </div>
+        <div class="hero-art" aria-hidden="true">
+          <div class="orb one"></div>
+          <div class="orb two"></div>
+          <div class="gridlines"></div>
+        </div>
+      </div>
+    </section>
 
-  <h2>Friend List</h2>
-  <ul id="friendList"></ul>
+    <!-- Projects -->
+    <section id="projects">
+      <div class="wrap">
+        <h2 class="section-title">Featured Projects</h2>
+        <p class="section-desc">A few things I’ve been building recently. Real code, real deploys, always learning.</p>
+        <div class="grid">
+          <article class="card span-4" data-reveal>
+            <div class="thumb">SPACE JOURNEY</div>
+            <h3>Space Journey Portfolio</h3>
+            <p class="lead">A 3D, Three.js‑powered experience featuring rockets, astronauts and portals.</p>
+            <div class="tag">Three.js</div>
+          </article>
+          <article class="card span-4" data-reveal>
+            <div class="thumb">STATES QUIZ</div>
+            <h3>50 States Quiz App</h3>
+            <p class="lead">ASP.NET Core Razor Pages quiz that drills capitals, shapes, and abbreviations.</p>
+            <div class="tag">C# • ASP.NET</div>
+          </article>
+          <article class="card span-4" data-reveal>
+            <div class="thumb">DRAFT ASSIST</div>
+            <h3>Fantasy Draft Picker</h3>
+            <p class="lead">Python + Pandas engine recommending best pick based on ranks & scarcity.</p>
+            <div class="tag">Python • Pandas</div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- About -->
+    <section id="about">
+      <div class="wrap about">
+        <div class="bubble" data-reveal>
+          <h2 class="section-title">About</h2>
+          <p class="section-desc">I’m a developer based near Phoenix, AZ. I enjoy shipping small, sharp tools and polishing UI details. My current stack includes HTML/CSS, React, C#, and Python for data projects.</p>
+          <p>When I’m not coding, I’m probably playing music, learning something new, or planning the next build.</p>
+        </div>
+        <div style="display:flex; align-items:center; gap:1rem" data-reveal>
+          <div class="avatar" aria-hidden="true">G</div>
+          <div>
+            <strong>Tech focus</strong>
+            <p style="margin:.25rem 0 0; color:var(--muted)">Web UI • Accessibility • Performance • Clean design systems</p>
+            <div style="display:flex; gap:.5rem; margin-top:.6rem; flex-wrap:wrap">
+              <span class="tag">HTML • CSS</span>
+              <span class="tag">React</span>
+              <span class="tag">C#</span>
+              <span class="tag">Python</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact -->
+    <section id="contact">
+      <div class="wrap">
+        <div class="contact" data-reveal>
+          <h2 class="section-title" style="margin:0 0 .25rem">Let’s build something</h2>
+          <p class="section-desc" style="margin:0 0 1rem">Have a question, an idea, or want to collaborate? Reach out and I’ll reply soon.</p>
+          <div class="cta">
+            <a class="btn primary" href="mailto:gavin@example.com">Email Me</a>
+            <a class="btn" href="#">GitHub</a>
+            <a class="btn" href="#">LinkedIn</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Optional: Resume anchor -->
+    <section id="resume" aria-label="Resume" hidden></section>
+  </main>
+
+  <footer>
+    <div class="wrap" style="display:flex; justify-content:space-between; align-items:center; gap:1rem; flex-wrap:wrap">
+      <small>© <span id="y">2025</span> Gavin Ogren</small>
+      <small>Built with semantic HTML & handcrafted CSS</small>
+    </div>
+  </footer>
 
   <script>
-    const friendListEl = document.getElementById('friendList');
-    const nameInput = document.getElementById('friendName');
-    const dateInput = document.getElementById('lastContact');
-    const addBtn = document.getElementById('addFriend');
-
-    // Load friends from LocalStorage
-    let friends = JSON.parse(localStorage.getItem('friends') || '[]');
-
-    function renderList() {
-      friendListEl.innerHTML = '';
-      friends.forEach((friend, index) => {
-        const li = document.createElement('li');
-        li.innerHTML = `
-          <span>${friend.name} <span class="date">(${friend.lastContact})</span></span>
-          <button onclick="removeFriend(${index})">Remove</button>
-        `;
-        friendListEl.appendChild(li);
-      });
-    }
-
-    function saveFriends() {
-      localStorage.setItem('friends', JSON.stringify(friends));
-    }
-
-    addBtn.addEventListener('click', () => {
-      const name = nameInput.value.trim();
-      const lastContact = dateInput.value;
-      if (!name || !lastContact) return alert('Enter name and date');
-
-      // Update if exists
-      const existing = friends.find(f => f.name.toLowerCase() === name.toLowerCase());
-      if (existing) {
-        existing.lastContact = lastContact;
-      } else {
-        friends.push({ name, lastContact });
-      }
-      saveFriends();
-      renderList();
-      nameInput.value = '';
-      dateInput.value = '';
-    });
-
-    window.removeFriend = (index) => {
-      friends.splice(index, 1);
-      saveFriends();
-      renderList();
-    }
-
-    renderList();
+    // Update year without layout shift
+    document.getElementById('y').textContent = new Date().getFullYear();
   </script>
 </body>
 </html>
