@@ -1,215 +1,223 @@
-
-
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Weather — Widget</title>
-  <meta name="description" content="Self-hosted weather widget (Open‑Meteo) styled to match the portfolio home theme." />
+  <title>Weather — Widget (Horizontal)</title>
+  <meta name="description" content="Self-hosted weather widget (Open-Meteo). Horizontal layout for Notion embeds.">
   <style>
-    /* =====================
-       Theme — matches site
-    ====================== */
-    :root{
-      --bg:#0b0c10; --surface:#111217; --card:#151822; --text:#e9ecf1; --muted:#b6bdc7; --border:#262a36; --accent:#09b6a2; --accent-2:#6ea8fe; --radius:16px; --shadow:0 10px 30px rgba(0,0,0,.35)
+    :root {
+      --bg: #0b0c10;
+      --surface: #111217;
+      --card: #151822;
+      --text: #e9ecf1;
+      --muted: #b6bdc7;
+      --border: #262a36;
+      --accent: #09b6a2;
+      --accent-2: #6ea8fe;
+      --radius: 16px;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
     }
-    @media (prefers-color-scheme: light){:root{--bg:#f6f7fb; --surface:#fff; --card:#fff; --text:#0f172a; --muted:#3f4a5a; --border:#e6e8ef; --shadow:0 10px 25px rgba(0,0,0,.08)}}
-
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg: #f6f7fb;
+        --surface: #ffffff;
+        --card: #ffffff;
+        --text: #0f172a;
+        --muted: #3f4a5a;
+        --border: #e6e8ef;
+        --shadow: 0 10px 25px rgba(0,0,0,.08);
+      }
+    }
     *,*::before,*::after{box-sizing:border-box}
     html,body{height:100%}
     body{
-      margin:0; background: radial-gradient(1000px 700px at 85% -10%, rgba(9,182,162,.15), transparent 60%),
-                               radial-gradient(1000px 700px at 10% 110%, rgba(110,168,254,.12), transparent 60%),
-                               var(--bg);
-      color:var(--text); font:500 15px/1.6 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial
+      margin:0;
+      background:
+        radial-gradient(1000px 700px at 85% -10%, rgba(9,182,162,.15), transparent 60%),
+        radial-gradient(1000px 700px at 10% 110%, rgba(110,168,254,.12), transparent 60%),
+        var(--bg);
+      color:var(--text);
+      font:500 15px/1.6 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial;
     }
-    .wrap{width:min(720px, 95%); margin-inline:auto; padding:1rem}
-
+    .wrap{width:min(980px, 98%); margin-inline:auto; padding:.6rem}
     .card{background:var(--card); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden}
-    .header{display:flex; justify-content:space-between; align-items:center; gap:.8rem; padding:1rem 1rem .75rem 1rem; border-bottom:1px solid var(--border)}
-    .loc{display:flex; align-items:center; gap:.6rem}
+    .bar{display:grid; grid-template-columns:auto auto 1fr; align-items:center; gap:1rem; padding:.75rem 1rem}
+    @media (max-width:720px){.bar{grid-template-columns:auto 1fr; row-gap:.5rem}}
+    .left{display:flex; align-items:center; gap:.8rem}
+    .icon{width:64px; height:64px}
+    .temp{font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight:900; line-height:1}
+    .cond{color:var(--muted); font-size:.95rem}
+    .meta{display:flex; flex-direction:column; gap:.4rem; min-width: 240px}
+    .loc{display:flex; align-items:center; gap:.5rem; font-weight:700}
     .dot{width:10px; height:10px; border-radius:50%; background:linear-gradient(135deg,var(--accent),var(--accent-2))}
-    .name{font-weight:800}
-    .time{color:var(--muted); font-size:.9rem}
-
-    .now{display:grid; grid-template-columns: .85fr 1.15fr; gap:1rem; padding:1rem}
-    @media (max-width:600px){.now{grid-template-columns:1fr}}
-
-    .now-left{display:flex; align-items:center; gap:1rem}
-    .temp{font-size: clamp(2.2rem, 6vw, 3.4rem); font-weight:900}
-    .cond{color:var(--muted)}
-
-    .pill{display:inline-flex; align-items:center; gap:.4rem; padding:.35rem .6rem; border:1px solid var(--border); border-radius:999px; color:var(--muted); font-size:.9rem}
-
-    .now-right{display:grid; grid-template-columns: repeat(3,1fr); gap:.6rem}
-    .kard{background:color-mix(in oklab, var(--surface) 85%, transparent); border:1px solid var(--border); border-radius:12px; padding:.7rem}
-    .kard b{display:block; font-size:.9rem; margin-bottom:.25rem}
-
-    .sub{display:flex; gap:.5rem; flex-wrap:wrap}
-
-    .days{display:grid; grid-template-columns: repeat(5,1fr); gap:.6rem; padding: .2rem 1rem 1rem}
-    @media (max-width:600px){.days{grid-template-columns: repeat(3,1fr)}}
-    .day{background:color-mix(in oklab, var(--surface) 85%, transparent); border:1px solid var(--border); border-radius:12px; padding:.7rem; text-align:center}
+    .time{color:var(--muted); font-weight:600}
+    .pills{display:flex; flex-wrap:wrap; gap:.4rem}
+    .pill{display:inline-flex; align-items:center; gap:.35rem; padding:.25rem .5rem; border:1px solid var(--border); border-radius:999px; color:var(--muted); font-size:.9rem}
+    .stats{display:flex; gap:.6rem; align-items:center}
+    .stat{background:rgba(255,255,255,.02); border:1px solid var(--border); border-radius:12px; padding:.45rem .6rem; font-size:.95rem}
+    .stat b{margin-right:.35rem; font-size:.9rem; color:var(--muted)}
+    .days{display:flex; gap:.5rem; overflow-x:auto; -webkit-overflow-scrolling:touch; padding:.25rem .25rem}
+    .day{min-width:76px; background:rgba(255,255,255,.02); border:1px solid var(--border); border-radius:12px; padding:.5rem; text-align:center}
     .day .d{color:var(--muted); font-size:.85rem}
     .day .hi{font-weight:800}
-
-    /* Mini sparkline */
-    .spark{height:48px; width:100%; display:block}
-
-    /* Animations */
-    @media (prefers-reduced-motion:no-preference){[data-reveal]{opacity:0; transform:translateY(10px); animation:rise .6s ease forwards} @keyframes rise{to{opacity:1; transform:none}}}
-
-    /* For clean Notion embeds */
+    .day svg{width:36px; height:36px}
+    .compact .stats, .compact .days{display:none}
+    .compact .icon{width:56px; height:56px}
+    .compact .bar{padding:.6rem .8rem}
     .embed-fit{max-width:100%; border-radius:var(--radius); overflow:hidden}
   </style>
 </head>
 <body>
   <div class="wrap embed-fit">
-    <div class="card" data-reveal>
-      <div class="header">
-        <div class="loc"><span class="dot"></span><span class="name" id="place">Loading…</span></div>
-        <div class="time" id="time">—</div>
-      </div>
-
-      <div class="now">
-        <div class="now-left">
-          <div id="icon" aria-hidden="true"></div>
+    <div class="card" id="root">
+      <div class="bar">
+        <div class="left">
+          <div id="icon" class="icon" aria-hidden="true"></div>
           <div>
             <div class="temp"><span id="t">--</span>°<span id="unit">F</span></div>
             <div class="cond" id="cond">—</div>
-            <div class="sub" style="margin-top:.5rem">
-              <span class="pill">H: <span id="hi">--</span>°</span>
-              <span class="pill">L: <span id="lo">--</span>°</span>
-              <span class="pill">Feels: <span id="feels">--</span>°</span>
-            </div>
           </div>
         </div>
-        <div class="now-right">
-          <div class="kard"><b>Humidity</b><span id="hum">--</span>%</div>
-          <div class="kard"><b>Wind</b><span id="wind">--</span> mph</div>
-          <div class="kard"><b>Precip Prob</b><span id="pop">--</span>%</div>
-          <svg class="spark" id="spark" viewBox="0 0 100 48" preserveAspectRatio="none"></svg>
-          <div style="grid-column: span 2; color:var(--muted); font-size:.9rem">Next 24h temp</div>
+        <div class="meta">
+          <div class="loc"><span class="dot"></span><span id="place">Loading...</span> • <span class="time" id="time">—</span></div>
+          <div class="pills">
+            <span class="pill">H: <span id="hi">--</span>°</span>
+            <span class="pill">L: <span id="lo">--</span>°</span>
+            <span class="pill">Feels: <span id="feels">--</span>°</span>
+            <span class="pill">Precip: <span id="pop">--</span>%</span>
+          </div>
+        </div>
+        <div class="stats">
+          <div class="stat"><b>Hum</b><span id="hum">--</span>%</div>
+          <div class="stat"><b>Wind</b><span id="wind">--</span> mph</div>
+          <div class="days" id="days"></div>
         </div>
       </div>
-
-      <div class="days" id="days"></div>
     </div>
   </div>
-
   <script>
-  // === Config ===
-  const DEFAULT = { lat: 33.604, lon: -111.717, label: 'Fountain Hills, AZ' };
-  const params = new URLSearchParams(location.search);
-  const useF = (params.get('unit') !== 'c'); // default Fahrenheit
-  const lat = parseFloat(params.get('lat')) || DEFAULT.lat;
-  const lon = parseFloat(params.get('lon')) || DEFAULT.lon;
-  const label = params.get('label') || DEFAULT.label;
+    // Config and params
+    var DEFAULT = { lat: 33.604, lon: -111.717, label: "Fountain Hills, AZ" };
+    var params = new URLSearchParams(location.search);
+    var useF = (params.get("unit") !== "c"); // default Fahrenheit
+    var lat = parseFloat(params.get("lat")) || DEFAULT.lat;
+    var lon = parseFloat(params.get("lon")) || DEFAULT.lon;
+    var label = params.get("label") || DEFAULT.label;
+    var compact = params.get("compact") === "1";
 
-  const API = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,wind_speed_10m&hourly=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_mean&timezone=auto`;
+    if (compact) document.getElementById("root").classList.add("compact");
 
-  // === Helpers ===
-  const $ = (id) => document.getElementById(id);
-  const fmtTemp = (vC) => useF ? Math.round(vC * 9/5 + 32) : Math.round(vC);
-  const mph = (mps) => Math.round(mps * 2.23694);
-  const codeText = (w) => ({
-    0:'Clear', 1:'Mainly Clear', 2:'Partly Cloudy', 3:'Overcast', 45:'Fog', 48:'Depositing Rime Fog',
-    51:'Light Drizzle', 53:'Moderate Drizzle', 55:'Dense Drizzle', 56:'Freezing Drizzle', 57:'Freezing Drizzle',
-    61:'Light Rain', 63:'Moderate Rain', 65:'Heavy Rain', 66:'Freezing Rain', 67:'Freezing Rain',
-    71:'Light Snow', 73:'Moderate Snow', 75:'Heavy Snow', 77:'Snow Grains',
-    80:'Rain Showers', 81:'Rain Showers', 82:'Violent Rain Showers', 85:'Snow Showers', 86:'Snow Showers',
-    95:'Thunderstorm', 96:'Thunderstorm (hail)', 97:'Thunderstorm (hail)'
-  })[w] || '—';
-
-  function iconSVG(code, isDay){
-    const sun = `<circle cx="24" cy="24" r="8" fill="url(#g)"/><g stroke="url(#g)" stroke-width="2">${Array.from({length:8},(_,i)=>{const a=i*Math.PI/4;return `<line x1="24" y1="6" x2="24" y2="0" transform="rotate(${i*45} 24 24)"/>`}).join('')}</g>`;
-    const cloud = `<ellipse cx="28" cy="28" rx="16" ry="10" fill="rgba(255,255,255,.85)"/><ellipse cx="18" cy="30" rx="12" ry="8" fill="rgba(255,255,255,.85)"/>`;
-    const rain = `<g stroke="url(#b)" stroke-width="3" stroke-linecap="round"><line x1="16" y1="36" x2="12" y2="44"/><line x1="26" y1="36" x2="22" y2="44"/><line x1="36" y1="36" x2="32" y2="44"/></g>`;
-    const bolt = `<polyline points="24,34 30,26 26,26 32,18" fill="none" stroke="url(#b)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`;
-    const moon = `<path d="M30 24a12 12 0 1 1-12-12a10 10 0 1 0 12 12z" fill="url(#g)" opacity=".9"/>`;
-    let content = sun;
-    if ([1,2,3,45,48].includes(code)) content = sun + cloud;
-    if ([51,53,55,61,63,65,80,81,82].includes(code)) content = cloud + rain + (isDay? sun : '');
-    if ([95,96,97].includes(code)) content = cloud + bolt + (isDay? sun : '');
-    if ([71,73,75,77,85,86].includes(code)) content = cloud; // simple snow icon
-    if (code === 0) content = isDay ? sun : moon;
-    return `<svg width="80" height="80" viewBox="0 0 48 48" role="img" aria-label="${codeText(code)}"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="${getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()}"/><stop offset="100%" stop-color="${getComputedStyle(document.documentElement).getPropertyValue('--accent-2').trim()}"/></linearGradient><linearGradient id="b" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="${getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()}"/><stop offset="100%" stop-color="${getComputedStyle(document.documentElement).getPropertyValue('--accent-2').trim()}"/></linearGradient></defs>${content}</svg>`;
-  }
-
-  function drawSpark(temps){
-    const svg = $('spark'); svg.innerHTML = '';
-    if (!temps || !temps.length) return;
-    const n = temps.length; const min = Math.min(...temps), max = Math.max(...temps);
-    const mapX = i => (i/(n-1))*100; const mapY = v => 48 - ((v - min)/(max - min||1))*46 - 1;
-    const d = temps.map((v,i)=> (i? 'L':'M') + mapX(i).toFixed(2) + ' ' + mapY(v).toFixed(2)).join(' ');
-    svg.innerHTML = `<path d="${d}" fill="none" stroke="url(#sg)" stroke-width="2"/><defs><linearGradient id="sg" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="${getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()}"/><stop offset="100%" stop-color="${getComputedStyle(document.documentElement).getPropertyValue('--accent-2').trim()}"/></linearGradient></defs>`;
-  }
-
-  // Try geolocation (optional for embeds)
-  function locate(){
-    return new Promise(resolve=>{
-      if (!navigator.geolocation) return resolve(null);
-      const opts = { enableHighAccuracy:false, timeout:2500, maximumAge: 3600_000 };
-      navigator.geolocation.getCurrentPosition(
-        pos => resolve({lat: pos.coords.latitude, lon: pos.coords.longitude, label: 'Your location'}),
-        () => resolve(null), opts
-      );
-    });
-  }
-
-  async function load(){
-    $('place').textContent = label;
-    $('unit').textContent = useF ? 'F' : 'C';
-
-    const geo = params.get('geo') === '1' ? (await locate()) : null;
-    const la = geo?.lat ?? lat; const lo = geo?.lon ?? lon; const lbl = geo?.label ?? label;
-
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${la}&longitude=${lo}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,wind_speed_10m&hourly=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_mean&timezone=auto`;
-
-    const res = await fetch(url); const data = await res.json();
-
-    $('place').textContent = lbl;
-    $('time').textContent = new Date().toLocaleString([], { hour: '2-digit', minute:'2-digit' });
-
-    const c = data.current;
-    $('t').textContent = fmtTemp(c.temperature_2m);
-    $('feels').textContent = fmtTemp(c.apparent_temperature);
-    $('hum').textContent = Math.round(c.relative_humidity_2m);
-    $('wind').textContent = mph(c.wind_speed_10m);
-    $('cond').textContent = codeText(c.weather_code);
-    $('icon').innerHTML = iconSVG(c.weather_code, !!c.is_day);
-
-    const d = data.daily;
-    $('hi').textContent = fmtTemp(d.temperature_2m_max[0]);
-    $('lo').textContent = fmtTemp(d.temperature_2m_min[0]);
-    $('pop').textContent = d.precipitation_probability_mean[0] ?? 0;
-
-    // Next 24h temps sparkline
-    const hours = data.hourly.time.map(t=> new Date(t));
-    const now = Date.now();
-    const next24 = data.hourly.temperature_2m.filter((_,i)=> (hours[i]-now)>=0 && (hours[i]-now) <= 24*3600*1000);
-    drawSpark(next24.map(v=> useF ? (v*9/5+32) : v));
-
-    // 5‑day mini forecast
-    const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-    const container = $('days'); container.innerHTML='';
-    for (let i=0;i<Math.min(5, d.time.length);i++){
-      const dt = new Date(d.time[i]);
-      container.insertAdjacentHTML('beforeend', `
-        <div class="day">
-          <div class="d">${dayNames[dt.getDay()]}</div>
-          <div style="display:flex; justify-content:center; margin:.25rem 0">${iconSVG(d.weather_code[i], 1)}</div>
-          <div class="hi">${fmtTemp(d.temperature_2m_max[i])}°</div>
-          <div class="d">${fmtTemp(d.temperature_2m_min[i])}°</div>
-        </div>`);
+    function $(id){ return document.getElementById(id); }
+    function fmtTemp(c){ return useF ? Math.round(c * 9/5 + 32) : Math.round(c); }
+    function mph(mps){ return Math.round(mps * 2.23694); }
+    function codeText(w){
+      var map = {
+        0:"Clear",1:"Mainly Clear",2:"Partly Cloudy",3:"Overcast",45:"Fog",48:"Rime Fog",
+        51:"Drizzle",53:"Drizzle",55:"Drizzle",56:"Freezing Drizzle",57:"Freezing Drizzle",
+        61:"Light Rain",63:"Rain",65:"Heavy Rain",66:"Freezing Rain",67:"Freezing Rain",
+        71:"Light Snow",73:"Snow",75:"Heavy Snow",77:"Snow Grains",
+        80:"Showers",81:"Showers",82:"Violent Showers",85:"Snow Showers",86:"Snow Showers",
+        95:"Thunderstorm",96:"Thunderstorm (hail)",97:"Thunderstorm (hail)"
+      };
+      return map[w] || "—";
     }
-  }
+    function getVar(name){
+      return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    }
+    function iconSVG(code, isDay){
+      var accent = getVar("--accent");
+      var accent2 = getVar("--accent-2");
+      var sun = '<circle cx="24" cy="24" r="8" fill="url(#g)"/>' +
+                '<g stroke="url(#g)" stroke-width="2">' +
+                Array(8).fill(0).map(function(_,i){
+                  return '<line x1="24" y1="6" x2="24" y2="0" transform="rotate('+(i*45)+' 24 24)"/>';
+                }).join("") + '</g>';
+      var cloud = '<ellipse cx="28" cy="28" rx="16" ry="10" fill="rgba(255,255,255,.85)"/>' +
+                  '<ellipse cx="18" cy="30" rx="12" ry="8" fill="rgba(255,255,255,.85)"/>';
+      var rain = '<g stroke="url(#b)" stroke-width="3" stroke-linecap="round">'+
+                 '<line x1="16" y1="36" x2="12" y2="44"/>'+
+                 '<line x1="26" y1="36" x2="22" y2="44"/>'+
+                 '<line x1="36" y1="36" x2="32" y2="44"/></g>';
+      var bolt = '<polyline points="24,34 30,26 26,26 32,18" fill="none" stroke="url(#b)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>';
+      var moon = '<path d="M30 24a12 12 0 1 1-12-12a10 10 0 1 0 12 12z" fill="url(#g)" opacity=".9"/>';
+      var content = sun;
+      if ([1,2,3,45,48].indexOf(code) > -1) content = sun + cloud;
+      if ([51,53,55,61,63,65,80,81,82].indexOf(code) > -1) content = cloud + rain + (isDay ? sun : "");
+      if ([95,96,97].indexOf(code) > -1) content = cloud + bolt + (isDay ? sun : "");
+      if ([71,73,75,77,85,86].indexOf(code) > -1) content = cloud;
+      if (code === 0) content = isDay ? sun : moon;
+      var svg = '<svg width="100%" height="100%" viewBox="0 0 48 48" role="img" aria-label="'+codeText(code)+'">'+
+                '<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">'+
+                '<stop offset="0%" stop-color="'+accent+'"/><stop offset="100%" stop-color="'+accent2+'"/>'+
+                '</linearGradient><linearGradient id="b" x1="0" y1="0" x2="1" y2="1">'+
+                '<stop offset="0%" stop-color="'+accent+'"/><stop offset="100%" stop-color="'+accent2+'"/>'+
+                '</linearGradient></defs>'+ content +'</svg>';
+      return svg;
+    }
 
-  load().catch(err=>{
-    console.error(err);
-    document.body.innerHTML = `<div style="padding:1rem; color:var(--muted)">Failed to load weather. Check your network or API URL.</div>`;
-  });
+    function tryGeo(){
+      return new Promise(function(resolve){
+        if (!navigator.geolocation) return resolve(null);
+        navigator.geolocation.getCurrentPosition(
+          function(pos){ resolve({lat: pos.coords.latitude, lon: pos.coords.longitude, label: "Your location"}); },
+          function(){ resolve(null); },
+          {timeout: 2000}
+        );
+      });
+    }
+
+    (async function load(){
+      var useGeo = params.get("geo") === "1";
+      var geo = useGeo ? (await tryGeo()) : null;
+      var la = (geo && geo.lat) ? geo.lat : lat;
+      var lo = (geo && geo.lon) ? geo.lon : lon;
+      var lbl = (geo && geo.label) ? geo.label : label;
+
+      var url = "https://api.open-meteo.com/v1/forecast?latitude="+la+"&longitude="+lo+
+        "&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,wind_speed_10m"+
+        "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_mean&timezone=auto";
+
+      var res = await fetch(url);
+      var data = await res.json();
+
+      $("place").textContent = lbl;
+      $("unit").textContent = useF ? "F" : "C";
+      $("time").textContent = new Date().toLocaleString([], { hour: "2-digit", minute:"2-digit" });
+
+      var c = data.current;
+      $("t").textContent = fmtTemp(c.temperature_2m);
+      $("feels").textContent = fmtTemp(c.apparent_temperature);
+      $("hum").textContent = Math.round(c.relative_humidity_2m);
+      $("wind").textContent = mph(c.wind_speed_10m);
+      $("cond").textContent = codeText(c.weather_code);
+      $("icon").innerHTML = iconSVG(c.weather_code, !!c.is_day);
+
+      var d = data.daily;
+      $("hi").textContent = fmtTemp(d.temperature_2m_max[0]);
+      $("lo").textContent = fmtTemp(d.temperature_2m_min[0]);
+      $("pop").textContent = (d.precipitation_probability_mean[0] != null ? d.precipitation_probability_mean[0] : 0);
+
+      var dayNames = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+      var container = $("days");
+      container.innerHTML = "";
+      for (var i=0; i<Math.min(5, d.time.length); i++){
+        var dt = new Date(d.time[i]);
+        var hi = fmtTemp(d.temperature_2m_max[i]);
+        var loV = fmtTemp(d.temperature_2m_min[i]);
+        var card = document.createElement("div");
+        card.className = "day";
+        card.innerHTML =
+          '<div class="d">'+ dayNames[dt.getDay()] +'</div>' +
+          iconSVG(d.weather_code[i], 1) +
+          '<div class="hi">'+ hi +'°</div>' +
+          '<div class="d">'+ loV +'°</div>';
+        container.appendChild(card);
+      }
+    })().catch(function(err){
+      console.error(err);
+      document.body.innerHTML = '<div style="padding:1rem; color:var(--muted)">Failed to load weather. Check your network or API URL.</div>';
+    });
   </script>
 </body>
 </html>
