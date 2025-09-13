@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Weather — Mini Widget (Square)</title>
+  <meta name="description" content="Tiny self‑hosted weather widget (Open‑Meteo). Square, compact, Notion‑friendly.">
+  <style>
+    :root{
+      --bg:#0b0c10; --surface:#111217; --card:#151822; --text:#e9ecf1; --muted:#b6bdc7; --border:#262a36;
+      --accent:#09b6a2; --accent-2:#6ea8fe; --shadow:0 10px 30px rgba(0,0,0,.35);
+      --radius:16px; --size:260px; /* override with ?s=220 */
+    }
+    @media (prefers-color-scheme: light){
+      :root{--bg:#f6f7fb; --surface:#fff; --card:#fff; --text:#0f172a; --muted:#3f4a5a; --border:#e6e8ef; --shadow:0 10px 25px rgba(0,0,0,.08)}
+    }
+    *,*::before,*::after{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      background:
+        radial-gradient(900px 600px at 85% -10%, rgba(9,182,162,.15), transparent 60%),
+        radial-gradient(900px 600px at 10% 110%, rgba(110,168,254,.12), transparent 60%),
+        var(--bg);
+      color:var(--text);
+      font:600 14px/1.5 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial;
+    }
+    .frame{width:var(--size); height:var(--size); margin:0 auto; padding:.5rem}
+    .widget{
+      width:100%; height:100%;
+      background:var(--card); border:1px solid var(--border); border-radius:var(--radius);
+      box-shadow:var(--shadow); display:grid; grid-template-rows:auto 1fr auto; gap:.35rem; padding:.6rem;
+    }
+    .top{display:flex; align-items:center; justify-content:space-between; gap:.5rem; min-height:1.25rem}
+    .loc{display:flex; align-items:center; gap:.4rem; min-width:0}
+    .dot{width:8px; height:8px; border-radius:50%; background:linear-gradient(135deg,var(--accent),var(--accent-2))}
+    .place{font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width: 75%}
+    .time{color:var(--muted); font-weight:600; font-size:.85rem}
+    .center{display:grid; align-content:center; justify-items:center; gap:.25rem; min-height:0}
+    .icon{width:54px; height:54px}
+    .temp{font-size: clamp(1.8rem, 6vw, 2.3rem); font-weight:900; line-height:1}
+    .cond{color:var(--muted); font-size:.9rem; text-align:center; max-width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+    .bottom{display:flex; align-items:center; justify-content:center; gap:.35rem; flex-wrap:wrap}
+    .pill{display:inline-flex; align-items:center; gap:.25rem; padding:.15rem .45rem; border:1px solid var(--border); border-radius:999px; color:var(--muted); font-size:.85rem}
+    /* Ultra tight mode trims labels for very small s */
+    .tight .cond{display:none}
+    .tight .time{display:none}
+    .tight .pill:last-child{display:none} /* hide precip */
+    /* Clean edges for Notion embeds */
+    .embed-fit{border-radius:var(--radius); overflow:hidden}
+  </style>
+</head>
+<body>
+  <div class="frame embed-fit">
+    <div class="widget" id="root">
+      <div class="top">
+        <div class="loc" id="loc"><span class="dot"></span><span class="place" id="place">Loading…</span></div>
+        <div class="time" id="time">—</div>
+      </div>
+      <div class="center">
+        <div id="icon" class="icon" aria-hidden="true"></div>
+        <div class="temp"><span id="t">--</span>°<span id="unit">F</span></div>
+        <div class="cond" id="cond">—</div>
+      </div>
+      <div class="bottom">
+        <span class="pill">H: <span id="hi">--</span>°</span>
+        <span class="pill">L: <span id="lo">--</span>°</span>
+        <span class="pill">Precip: <span id="pop">--</span>%</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Params
+    var DEFAULT = { lat:33.604, lon:-111.717, label:"Fountain Hills" };
+    var p = new URLSearchParams(location.search);
+    var useF = (p.get("unit") !== "c");
+    var lat = parseFloat(p.get("lat")) || DEFAULT.lat;
+    var lon = parseFloat(p.get("lon")) || DEFAULT.lon;
+    var label = p.get("label") || DEFAULT.label;
+    var s = parseInt(p.get("s"), 10);
+    if (!isNaN(s)) {
+      s = Math.max(180, Math.min(360, s)); // clamp 180–360
+      document.documentElement.style.setProperty("--size", s + "px");
+      if (s <= 210) document.getElementById("root").classList.add("tight");
+    }
+    if (p.get("nolabel") === "1") document.getElementById("loc").style.display = "none";
+    if (p.get("nocond") === "1") document.getElementById("cond").style.display = "none";
+
+    function $(id){ return document.getElementById(id); }
+    function fmtTemp(c){ return useF ? Math.round(c * 9/5 + 32) : Math.round(c); }
+    function codeText(w){
+      var map = {0:"Clear",1:"Mainly Clear",2:"Partly Cloudy",3:"Overcast",45:"Fog",48:"Rime Fog",51:"Drizzle",53:"Drizzle",
+                 55:"Drizzle",56:"Freezing Drizzle",57:"Freezing Drizzle",61:"Light Rain",63:"Rain",65:"Heavy Rain",66:"Freezing Rain",
+                 67:"Freezing Rain",71:"Light Snow",73:"Snow",75:"Heavy Snow",77:"Snow Grains",80:"Showers",81:"Showers",82:"Violent Showers",
+                 85:"Snow Showers",86:"Snow Showers",95:"Thunderstorm",96:"Thunderstorm (hail)",97:"Thunderstorm (hail)"};
+      return map[w] || "—";
+    }
+    function getVar(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+    function iconSVG(code, isDay){
+      var a = getVar("--accent"), b = getVar("--accent-2");
+      var sun = '<circle cx="24" cy="24" r="8" fill="url(#g)"/>'+
+                '<g stroke="url(#g)" stroke-width="2">'+
+                Array(8).fill(0).map(function(_,i){return '<line x1="24" y1="6" x2="24" y2="0" transform="rotate('+(i*45)+' 24 24)"/>';}).join("")+
+                '</g>';
+      var cloud = '<ellipse cx="28" cy="28" rx="16" ry="10" fill="rgba(255,255,255,.85)"/>'+
+                  '<ellipse cx="18" cy="30" rx="12" ry="8" fill="rgba(255,255,255,.85)"/>';
+      var rain = '<g stroke="url(#b)" stroke-width="3" stroke-linecap="round">'+
+                 '<line x1="16" y1="36" x2="12" y2="44"/>'+
+                 '<line x1="26" y1="36" x2="22" y2="44"/>'+
+                 '<line x1="36" y1="36" x2="32" y2="44"/></g>';
+      var bolt = '<polyline points="24,34 30,26 26,26 32,18" fill="none" stroke="url(#b)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>';
+      var moon = '<path d="M30 24a12 12 0 1 1-12-12a10 10 0 1 0 12 12z" fill="url(#g)" opacity=".9"/>';
+      var content = sun;
+      if ([1,2,3,45,48].indexOf(code) > -1) content = sun + cloud;
+      if ([51,53,55,61,63,65,80,81,82].indexOf(code) > -1) content = cloud + rain + (isDay ? sun : "");
+      if ([95,96,97].indexOf(code) > -1) content = cloud + bolt + (isDay ? sun : "");
+      if ([71,73,75,77,85,86].indexOf(code) > -1) content = cloud;
+      if (code === 0) content = isDay ? sun : moon;
+      return '<svg width="54" height="54" viewBox="0 0 48 48" role="img" aria-label="'+codeText(code)+'">'+
+             '<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">'+
+             '<stop offset="0%" stop-color="'+a+'"/><stop offset="100%" stop-color="'+b+'"/></linearGradient>'+
+             '<linearGradient id="b" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="'+a+'"/>'+
+             '<stop offset="100%" stop-color="'+b+'"/></linearGradient></defs>'+ content +'</svg>';
+    }
+
+    (async function(){
+      var url = "https://api.open-meteo.com/v1/forecast?latitude="+lat+"&longitude="+lon+
+                "&current=temperature_2m,apparent_temperature,is_day,weather_code&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_mean&timezone=auto";
+      try {
+        var r = await fetch(url);
+        var d = await r.json();
+        document.getElementById("place").textContent = label;
+        document.getElementById("unit").textContent = useF ? "F" : "C";
+        document.getElementById("time").textContent = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+        var c = d.current;
+        document.getElementById("t").textContent = fmtTemp(c.temperature_2m);
+        document.getElementById("cond").textContent = codeText(c.weather_code);
+        document.getElementById("icon").innerHTML = iconSVG(c.weather_code, !!c.is_day);
+        var day = d.daily;
+        document.getElementById("hi").textContent = fmtTemp(day.temperature_2m_max[0]);
+        document.getElementById("lo").textContent = fmtTemp(day.temperature_2m_min[0]);
+        document.getElementById("pop").textContent = (day.precipitation_probability_mean[0] != null ? day.precipitation_probability_mean[0] : 0);
+      } catch (e){
+        console.error(e);
+        document.body.innerHTML = '<div style="padding:1rem; color:var(--muted)">Failed to load weather.</div>';
+      }
+    })();
+  </script>
+</body>
+</html>
+
