@@ -7,9 +7,17 @@
   <meta name="description" content="Daily routine + add-ons for Gavin Ogren." />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%2309b6a2'/%3E%3Ctext x='50' y='54' font-size='54' text-anchor='middle' dominant-baseline='middle' fill='white' font-family='Segoe UI, Roboto, Arial, sans-serif'%3EG%3C/text%3E%3C/svg%3E" />
   <script>
-    window.SUPABASE_URL = "%SUPABASE_URL%" || window.SUPABASE_URL;
-    window.SUPABASE_ANON_KEY = "%SUPABASE_ANON_KEY%" || window.SUPABASE_ANON_KEY;
-    window.SUPABASE_USER_ID = "%SUPABASE_USER_ID%" || window.SUPABASE_USER_ID || "gavin";
+    (function(){
+      const pick = (placeholder, fallback) => {
+        if(placeholder && !placeholder.includes("%SUPABASE_")){
+          return placeholder;
+        }
+        return fallback;
+      };
+      window.SUPABASE_URL = pick("%SUPABASE_URL%", window.SUPABASE_URL);
+      window.SUPABASE_ANON_KEY = pick("%SUPABASE_ANON_KEY%", window.SUPABASE_ANON_KEY);
+      window.SUPABASE_USER_ID = pick("%SUPABASE_USER_ID%", window.SUPABASE_USER_ID || "gavin");
+    })();
   </script>
   <script src="https://unpkg.com/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
 
