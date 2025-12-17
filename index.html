@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Gavin Ogren — Home</title>
   <meta name="description" content="Portfolio home for Gavin Ogren — developer, builder, and creator in Arizona." />
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%2309b6a2'/%3E%3Ctext x='50' y='60' font-size='54' text-anchor='middle' fill='white' font-family='Segoe UI, Roboto, Arial, sans-serif'%3EG%3C/text%3E%3C/svg%3E" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%2309b6a2'/%3E%3Ctext x='50' y='54' font-size='54' text-anchor='middle' dominant-baseline='middle' fill='white' font-family='Segoe UI, Roboto, Arial, sans-serif'%3EG%3C/text%3E%3C/svg%3E" />
   <style>
     /* =====================
        Design Tokens
@@ -68,8 +68,22 @@
     .nav{display:flex; align-items:center; justify-content:space-between; padding:.9rem 0}
     .brand{display:flex; align-items:center; gap:.6rem; font-weight: 800; letter-spacing:.4px}
     .brand-badge{width:36px; height:36px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--accent-2)); display:grid; place-items:center; color:white; font-weight:900}
-    nav ul{display:flex; gap: clamp(.4rem, 2vw, 1rem); list-style:none; padding:0; margin:0}
-    nav a{padding:.5rem .75rem; border-radius: 999px; border:1px solid transparent}
+    nav ul{
+      display:flex;
+      align-items:center;
+      gap: clamp(.4rem, 2vw, 1rem);
+      list-style:none;
+      padding:0;
+      margin:0;
+    }
+    nav li{display:flex; align-items:center}
+    nav a{
+      display:inline-flex;
+      align-items:center;
+      padding:.5rem .75rem;
+      border-radius: 999px;
+      border:1px solid transparent;
+    }
     nav a:hover{border-color: var(--border); background: color-mix(in oklab, var(--surface) 65%, transparent)}
 
     /* =====================
@@ -155,7 +169,7 @@
       </a>
       <nav aria-label="Primary">
         <ul>
-          <li><a style="margin-top: 40px;" #projects>Projects</a></li>
+          <li><a href="#projects">Projects</a></li>
           <li><a href="#about">About</a></li>
           <li><a href="#contact">Contact</a></li>
           <li><a class="btn" href="#resume">Resume</a></li>

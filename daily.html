@@ -1,0 +1,1999 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gavin Ogren — Daily Briefing</title>
+  <meta name="description" content="Daily routine + add-ons for Gavin Ogren." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%2309b6a2'/%3E%3Ctext x='50' y='54' font-size='54' text-anchor='middle' dominant-baseline='middle' fill='white' font-family='Segoe UI, Roboto, Arial, sans-serif'%3EG%3C/text%3E%3C/svg%3E" />
+  <script>
+    window.SUPABASE_URL = "%SUPABASE_URL%" || window.SUPABASE_URL;
+    window.SUPABASE_ANON_KEY = "%SUPABASE_ANON_KEY%" || window.SUPABASE_ANON_KEY;
+    window.SUPABASE_USER_ID = "%SUPABASE_USER_ID%" || window.SUPABASE_USER_ID || "gavin";
+  </script>
+  <script src="https://unpkg.com/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
+
+  <style>
+    /* =====================
+       Design Tokens (same as your site)
+    ====================== */
+    :root {
+      --bg: #0b0c10;
+      --surface: #111217;
+      --card: #151822;
+      --text: #e9ecf1;
+      --muted: #b6bdc7;
+      --border: #262a36;
+      --accent: #09b6a2; /* teal */
+      --accent-2: #6ea8fe; /* blue */
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius: 16px;
+      --grid-gap: clamp(0.75rem, 1vw, 1rem);
+    }
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg: #f6f7fb;
+        --surface: #ffffff;
+        --card: #ffffff;
+        --text: #0f172a;
+        --muted: #3f4a5a;
+        --border: #e6e8ef;
+        --shadow: 0 10px 25px rgba(0,0,0,.08);
+      }
+    }
+
+    /* =====================
+       Base / Reset
+    ====================== */
+    *,*::before,*::after{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      background:
+        radial-gradient(1200px 800px at 85% -10%, rgba(9,182,162,.15), transparent 60%),
+        radial-gradient(1200px 800px at 10% 110%, rgba(110,168,254,.12), transparent 60%),
+        var(--bg);
+      color:var(--text);
+      font: 500 16px/1.6 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+    a{color:inherit; text-decoration:none}
+    :focus-visible{outline: 2px solid var(--accent); outline-offset: 2px}
+    .wrap{width:min(1100px, 92%); margin-inline:auto}
+
+    /* =====================
+       Header / Nav (same vibe)
+    ====================== */
+    .skip {position:absolute; left:-9999px; top:auto}
+    .skip:focus {left:1rem; top:1rem; background:var(--surface); color:var(--text); padding:.6rem .8rem; border-radius:10px; box-shadow:var(--shadow)}
+
+    header{
+      position: sticky; top:0; z-index:10; backdrop-filter: blur(8px);
+      background: color-mix(in oklab, var(--bg) 70%, transparent);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav{display:flex; align-items:center; justify-content:space-between; padding:.9rem 0}
+    .brand{display:flex; align-items:center; gap:.6rem; font-weight:800; letter-spacing:.4px}
+    .brand-badge{
+      width:36px; height:36px; border-radius:50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      display:grid; place-items:center; color:white; font-weight:900;
+    }
+    nav ul{
+      display:flex; align-items:center; gap: clamp(.4rem, 2vw, 1rem);
+      list-style:none; padding:0; margin:0;
+    }
+    nav li{display:flex; align-items:center}
+    nav a{display:inline-flex; align-items:center; padding:.5rem .75rem; border-radius:999px; border:1px solid transparent}
+    nav a:hover{border-color: var(--border); background: color-mix(in oklab, var(--surface) 65%, transparent)}
+    .btn{
+      display:inline-flex; align-items:center; gap:.5rem;
+      padding:.8rem 1rem; border-radius: 12px;
+      border:1px solid var(--border); background: var(--surface);
+      font-weight:700; transition: transform .2s ease;
+    }
+    .btn:hover{transform: translateY(-2px)}
+    .btn.primary{background: linear-gradient(135deg, var(--accent), var(--accent-2)); color:white; border-color: transparent}
+
+    /* =====================
+       Page layout
+    ====================== */
+    main{padding: clamp(1.3rem, 4vw, 2.6rem) 0}
+    .page-head{
+      display:flex; align-items:flex-end; justify-content:space-between; gap:1rem; flex-wrap:wrap;
+      margin: 0 0 1rem;
+    }
+    h1{margin:0; font-size: clamp(1.6rem, 4vw, 2.2rem); line-height:1.2}
+    .sub{margin:.25rem 0 0; color: var(--muted)}
+    .pill{
+      display:inline-flex; align-items:center; gap:.5rem;
+      font-size:.85rem; color:var(--muted);
+      border:1px solid var(--border);
+      padding:.45rem .7rem; border-radius:999px;
+      background: color-mix(in oklab, var(--surface) 70%, transparent);
+    }
+    .dot{width:8px; height:8px; border-radius:50%; background: linear-gradient(135deg, var(--accent), var(--accent-2))}
+    .controls{display:flex; gap:.6rem; align-items:center; flex-wrap:wrap}
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1.25fr .75fr;
+      gap: var(--grid-gap);
+      align-items:start;
+    }
+    @media (max-width: 900px){ .grid{grid-template-columns:1fr} }
+    .stack{display:flex; flex-direction:column; gap:var(--grid-gap)}
+
+    .card{
+      background: var(--card);
+      border:1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+      box-shadow: var(--shadow);
+    }
+    .card h2{margin:0; font-size: 1rem;}
+    .card-headline{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:.75rem;
+      flex-wrap:wrap;
+      margin-bottom:.8rem;
+    }
+    .routine-toolbar{
+      display:flex; align-items:center; gap:.5rem;
+      flex-wrap:wrap;
+    }
+    .routine-filter{
+      display:flex;
+      align-items:center;
+      gap:.4rem;
+      font-size:.85rem;
+      color: var(--muted);
+    }
+    .muted{color: var(--muted)}
+
+    select, input, textarea, button{
+      font: inherit;
+      color: var(--text);
+      background: color-mix(in oklab, var(--surface) 70%, transparent);
+      border:1px solid var(--border);
+      border-radius: 12px;
+      padding: .7rem .8rem;
+      outline:none;
+    }
+    textarea{min-height: 92px; resize: vertical}
+    select:hover, input:hover, textarea:hover{border-color: color-mix(in oklab, var(--accent) 30%, var(--border))}
+    button{cursor:pointer}
+    button.primary{
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color:#fff; border-color: transparent;
+    }
+
+    /* Routine sections */
+    details{
+      border:1px solid var(--border);
+      border-radius: 14px;
+      overflow:hidden;
+      background: color-mix(in oklab, var(--surface) 70%, transparent);
+      margin-bottom: .8rem;
+    }
+    summary{
+      cursor:pointer;
+      list-style:none;
+      display:flex; align-items:center; justify-content:space-between; gap:1rem;
+      padding:.85rem .9rem;
+      font-weight: 800;
+    }
+    summary::-webkit-details-marker{display:none}
+    .meta{font-weight:600; color: var(--muted); font-size:.9rem}
+    .list{
+      border-top:1px solid var(--border);
+      padding: .75rem .9rem .9rem;
+      display:flex; flex-direction:column; gap:.55rem;
+    }
+    .row{
+      display:flex; align-items:flex-start; justify-content:space-between; gap:.8rem;
+      padding:.65rem .65rem;
+      border-radius: 12px;
+      background: color-mix(in oklab, var(--card) 75%, transparent);
+      border: 1px solid color-mix(in oklab, var(--border) 80%, transparent);
+    }
+    .row.skipped{opacity:.55; border-style:dashed}
+    .row.selected{border-color: color-mix(in oklab, var(--accent) 40%, var(--border)); box-shadow:0 0 0 1px color-mix(in oklab, var(--accent) 35%, transparent)}
+    .left{
+      display:flex; gap:.65rem; align-items:flex-start; min-width:0;
+    }
+    .text-wrap{display:flex; flex-direction:column; gap:.15rem; min-width:0}
+    .time-chip{font-size:.85rem; color: var(--muted)}
+    .notes{font-size:.9rem; color: var(--muted); line-height:1.4}
+    .sub-hint{font-size:.8rem; color: var(--muted)}
+    .days-hint{font-size:.78rem; color: var(--accent-2); font-weight:600}
+    .chk{
+      margin-top: 3px;
+      width: 18px; height: 18px;
+      accent-color: var(--accent);
+      cursor:pointer;
+      flex-shrink:0;
+    }
+    .title{
+      font-weight:700;
+      line-height: 1.25;
+      word-break: break-word;
+    }
+    .tag{
+      font-size:.8rem; color: var(--muted);
+      border:1px solid var(--border);
+      padding:.2rem .55rem;
+      border-radius:999px;
+      white-space:nowrap;
+    }
+    .row-actions{
+      display:flex;
+      flex-direction:column;
+      gap:.35rem;
+      align-items:flex-end;
+      min-width:150px;
+    }
+    .row-actions .action-buttons{
+      display:flex;
+      gap:.3rem;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    .row.drag-over{border-style:dashed; border-color: color-mix(in oklab, var(--accent) 30%, var(--border))}
+
+    .timeline{display:flex; flex-direction:column; gap:.7rem}
+    .timeline-item{
+      display:flex; gap:.8rem;
+      border:1px solid var(--border);
+      border-radius: 14px;
+      padding:.7rem .8rem;
+      background: color-mix(in oklab, var(--surface) 70%, transparent);
+    }
+    .timeline-icon{
+      width:36px; height:36px; border-radius:12px;
+      display:flex; align-items:center; justify-content:center;
+      font-weight:700; background: color-mix(in oklab, var(--card) 80%, transparent);
+      border:1px solid color-mix(in oklab, var(--border) 70%, transparent);
+      flex-shrink:0;
+    }
+    .timeline-body{flex:1; min-width:0}
+    .timeline-meta{font-size:.85rem; color:var(--muted); margin-top:.2rem}
+    .timeline-actions{display:flex; gap:.4rem; flex-wrap:wrap; margin-top:.4rem}
+    .timeline-item.past{opacity:.5}
+    .timeline-marker{
+      text-align:center;
+      border:1px dashed var(--border);
+      border-radius:12px;
+      padding:.5rem;
+      font-size:.9rem;
+      color: var(--muted);
+    }
+    #dayIndicator{margin:-.3rem 0 .8rem; font-size:.9rem}
+
+    .filters{
+      display:flex; gap:.6rem; align-items:center; flex-wrap:wrap;
+      margin-bottom:.8rem;
+    }
+    .filters label{font-weight:600}
+    .priority-control{
+      display:flex;
+      align-items:center;
+      gap:.35rem;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    .routine-priority-select{
+      border-radius:999px;
+      border:1px solid var(--border);
+      background: color-mix(in oklab, var(--surface) 50%, transparent);
+      color:inherit;
+      padding:.2rem .6rem;
+    }
+    .subtask-panel{
+      border:1px dashed var(--border);
+      border-radius:12px;
+      padding:.75rem;
+      margin-bottom:1rem;
+      background: color-mix(in oklab, var(--surface) 65%, transparent);
+    }
+    .subtask-panel h3{margin:0 0 .35rem; font-size:.95rem}
+    .subtask-list{display:flex; flex-direction:column; gap:.4rem; margin:.6rem 0}
+    .subtask-row{
+      display:flex; align-items:center; justify-content:space-between;
+      gap:.5rem;
+      padding:.4rem .5rem;
+      border:1px solid var(--border);
+      border-radius:10px;
+      background: color-mix(in oklab, var(--card) 70%, transparent);
+    }
+    .subtask-row label{display:flex; align-items:center; gap:.4rem; flex:1}
+    .subtask-row input[type="checkbox"]{width:16px; height:16px; accent-color: var(--accent)}
+    .subtask-form{display:flex; gap:.4rem; flex-wrap:wrap}
+    .subtask-form input{flex:1; min-width:160px}
+
+    button.text-btn{
+      background: color-mix(in oklab, var(--surface) 60%, transparent);
+      border-radius:999px;
+      padding:.35rem .85rem;
+      border:1px solid var(--border);
+      font-weight:600;
+    }
+    button.text-btn.ghost{background:transparent}
+    button.text-btn.danger{color:#ff9c9c; border-color:rgba(255,156,156,.35)}
+    .rule-book{
+      margin-top:.9rem;
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:.75rem .8rem;
+      background: color-mix(in oklab, var(--surface) 65%, transparent);
+    }
+    .rule-book summary{font-weight:700; cursor:pointer}
+    .rule-book p{margin:.35rem 0; color: var(--muted); font-size:.95rem}
+
+    /* Add-ons panel */
+    .form{
+      display:grid;
+      grid-template-columns: 120px 1fr;
+      gap: .7rem;
+    }
+    .form .full{grid-column: 1 / -1}
+    .hint{font-size:.9rem; color: var(--muted); margin-top:.8rem}
+
+    .event{
+      display:flex; align-items:flex-start; justify-content:space-between; gap:.8rem;
+      padding:.7rem .7rem;
+      border:1px solid var(--border);
+      border-radius: 14px;
+      background: color-mix(in oklab, var(--surface) 70%, transparent);
+      margin-top:.6rem;
+    }
+    .event .time{font-weight:900}
+    .event .notes{color: var(--muted); margin-top:.15rem; font-size:.92rem}
+
+    footer{padding:1.6rem 0; color:var(--muted); border-top:1px solid var(--border)}
+  </style>
+</head>
+
+<body>
+  <a href="#main" class="skip">Skip to content</a>
+
+  <header>
+    <div class="wrap nav">
+      <a href="index.html#home" class="brand" aria-label="Gavin home">
+        <span class="brand-badge" aria-hidden="true">G</span>
+        <span>Gavin Ogren</span>
+      </a>
+
+      <nav aria-label="Primary">
+        <ul>
+          <li><a href="index.html#projects">Projects</a></li>
+          <li><a href="index.html#about">About</a></li>
+          <li><a href="index.html#contact">Contact</a></li>
+          <li><a class="btn primary" href="daily.html" aria-current="page">Daily</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="wrap">
+      <div class="page-head">
+        <div>
+          <div class="pill"><span class="dot"></span> Daily Briefing</div>
+          <h1>Today’s plan</h1>
+          <p class="sub" id="dateLine"></p>
+        </div>
+
+        <div class="controls">
+          <label class="pill" style="gap:.6rem">
+            Day type
+            <select id="dayType" aria-label="Choose day type">
+              <option value="work">Work Day</option>
+              <option value="midweek">Mid-week Day</option>
+              <option value="service">Mid-week Service Day</option>
+            </select>
+          </label>
+          <span class="pill" id="progressPill">0% complete</span>
+          <button id="resetChecks">Reset today</button>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="stack">
+          <section class="card" aria-label="Routine blocks">
+            <div class="card-headline">
+              <h2>Routine blocks</h2>
+              <div class="routine-toolbar">
+                <span class="muted" style="font-weight:700; font-size:.95rem">check it off, keep it moving</span>
+                <label class="routine-filter">
+                  <span>Filter</span>
+                  <select id="routineFilter">
+                    <option value="all">All</option>
+                    <option value="core">Core</option>
+                    <option value="home">Home</option>
+                    <option value="growth">Growth</option>
+                    <option value="gym">Gym</option>
+                    <option value="add-on">Add-ons</option>
+                  </select>
+                </label>
+                <button class="text-btn" type="button" id="addRoutineBlock">Add block</button>
+              </div>
+            </div>
+            <div id="routine"></div>
+          </section>
+
+          <section class="card" aria-label="Today schedule">
+            <div class="card-headline">
+              <h2>Today’s schedule</h2>
+              <span class="muted" style="font-weight:700; font-size:.95rem">routine + add-ons + maintenance tasks</span>
+            </div>
+            <p class="muted" id="dayIndicator"></p>
+            <div id="scheduleList" class="timeline"></div>
+          </section>
+        </div>
+
+        <div class="stack">
+          <aside class="card" aria-label="Today add-ons">
+            <h2>
+              Today’s add-ons
+              <span class="muted" style="font-weight:700; font-size:.95rem">parties • appointments • anything</span>
+            </h2>
+
+            <div class="form">
+              <label class="muted" for="eventTime">Time</label>
+              <input id="eventTime" type="time" />
+
+              <label class="muted" for="eventTitle">Title</label>
+              <input id="eventTitle" placeholder="Party / oil change / meeting prep…" />
+
+              <label class="muted" for="eventNotes">Notes</label>
+              <textarea id="eventNotes" placeholder="Optional: location, who, what to bring, etc."></textarea>
+
+              <div></div>
+              <button class="primary" id="addEvent">Add to today</button>
+            </div>
+
+            <p class="hint" style="margin-top:.8rem">
+              Add-ons appear inside your routine blocks. Drag them wherever you need them.
+            </p>
+          </aside>
+
+          <aside class="card" aria-label="Maintenance tracker">
+            <h2>
+              Task & maintenance tracker
+              <span class="muted" style="font-weight:700; font-size:.95rem">room • bathroom • car + custom tasks</span>
+            </h2>
+            <div class="subtask-panel">
+              <h3>Routine sub tasks</h3>
+              <p class="muted" id="subTaskStatus">Click a routine row to manage its sub checklist.</p>
+              <div id="subTaskList" class="subtask-list"></div>
+              <form id="subTaskForm" class="subtask-form">
+                <input id="subTaskInput" placeholder="Add sub task detail" />
+                <button class="text-btn" type="submit">Add</button>
+              </form>
+            </div>
+
+            <details class="rule-book" open>
+              <summary>Special rules reference</summary>
+              <p><strong>Room cleanings</strong>: <em>Daily</em> = pick up, make bed, keep things presentable. <em>Weekly</em> adds drawer organization + vacuum. <em>Monthly</em> adds dusting, windows, closet + under-bed deep clean.</p>
+              <p><strong>Bathroom cleanings</strong>: <em>Daily</em> = counters/sink wiped, nothing on top, clothes in bin. <em>Weekly</em> adds vacuum/mop as needed + tidy drawers + windows. <em>Monthly</em> adds scrub tub + toilet, organize supplies.</p>
+              <p><strong>Car maintenance</strong>: <em>Weekly</em> = quick console wipe + smudges. <em>Biweekly</em> also means car wash + vacuum if needed.</p>
+            </details>
+          </aside>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap" style="display:flex; justify-content:space-between; align-items:center; gap:1rem; flex-wrap:wrap">
+      <small>© <span id="y">2025</span> Gavin Ogren</small>
+      <small>Daily Briefing • Built with semantic HTML & handcrafted CSS</small>
+    </div>
+  </footer>
+
+<script>
+  // Update year
+  document.getElementById('y').textContent = new Date().getFullYear();
+
+  // Date line
+  document.getElementById("dateLine").textContent =
+    new Date().toLocaleDateString(undefined, { weekday:"long", year:"numeric", month:"long", day:"numeric" });
+
+  // ---------- Supabase config ----------
+  // Provide window.SUPABASE_URL / window.SUPABASE_ANON_KEY / window.SUPABASE_USER_ID earlier in the page to enable sync.
+  const SUPABASE_URL = window.SUPABASE_URL || "";
+  const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || "";
+  const SUPABASE_USER_ID = window.SUPABASE_USER_ID || "gavin";
+  const SUPABASE_ENABLED = !!(SUPABASE_URL && SUPABASE_ANON_KEY && window.supabase);
+  const supabaseClient = SUPABASE_ENABLED
+    ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+    : null;
+  const ROUTINES_TABLE = "daily_routines";
+  const STATE_TABLE = "daily_state";
+  let routinesPushTimer = null;
+  let statePushTimer = null;
+
+  async function pullSupabaseRoutines(){
+    if(!supabaseClient) return;
+    try{
+      const { data, error } = await supabaseClient
+        .from(ROUTINES_TABLE)
+        .select("data")
+        .eq("user_id", SUPABASE_USER_ID)
+        .maybeSingle();
+      if(error) throw error;
+      if(data && data.data){
+        routines = ensureRoutineTypes(data.data);
+        saveRoutines({ skipCloud: true });
+        ensureRoutineItemIds();
+        renderRoutine();
+      }
+    }catch(err){
+      console.warn("Supabase routines sync failed", err);
+    }
+  }
+
+  async function pullSupabaseState(){
+    if(!supabaseClient) return;
+    try{
+      const { data, error } = await supabaseClient
+        .from(STATE_TABLE)
+        .select("data")
+        .eq("user_id", SUPABASE_USER_ID)
+        .eq("day_key", todayKey())
+        .maybeSingle();
+      if(error && error.code !== "PGRST116") throw error;
+      if(data && data.data){
+        state = {
+          ...defaultState(),
+          ...data.data,
+        };
+        saveState({ skipCloud: true });
+        renderRoutine();
+      }
+    }catch(err){
+      console.warn("Supabase state sync failed", err);
+    }
+  }
+
+  async function pushRoutinesToSupabase(){
+    if(!supabaseClient) return;
+    try{
+      await supabaseClient
+        .from(ROUTINES_TABLE)
+        .upsert({
+          user_id: SUPABASE_USER_ID,
+          data: routines,
+          updated_at: new Date().toISOString()
+        }, { onConflict: "user_id" });
+    }catch(err){
+      console.warn("Supabase routines push failed", err);
+    }
+  }
+
+  async function pushStateToSupabase(){
+    if(!supabaseClient) return;
+    try{
+      await supabaseClient
+        .from(STATE_TABLE)
+        .upsert({
+          user_id: SUPABASE_USER_ID,
+          day_key: todayKey(),
+          data: state,
+          updated_at: new Date().toISOString()
+        }, { onConflict: "user_id,day_key" });
+    }catch(err){
+      console.warn("Supabase state push failed", err);
+    }
+  }
+
+  function queueSupabasePush(bucket){
+    if(!supabaseClient) return;
+    if(bucket === "routines"){
+      clearTimeout(routinesPushTimer);
+      routinesPushTimer = setTimeout(() => {
+        pushRoutinesToSupabase();
+      }, 600);
+    } else {
+      clearTimeout(statePushTimer);
+      statePushTimer = setTimeout(() => {
+        pushStateToSupabase();
+      }, 400);
+    }
+  }
+
+  async function syncFromSupabase(){
+    await Promise.all([pullSupabaseRoutines(), pullSupabaseState()]);
+  }
+
+  // ---------- Routines (with time hints) ----------
+  const BASE_ROUTINES = {
+    work: [
+      {
+        title: "🌅 Morning (5:30–6:23)",
+        meta: "Prepare, not impress",
+        start: "05:30",
+        items: [
+          { text: "Wake up 5:30", tag: "core" },
+          { text: "Bible reading (up to 30 min, not forced)", tag: "core" },
+          { text: "Make bed", tag: "core" },
+          { text: "Bathroom hygiene block (teeth, floss, lotion, deodorant, hair)", tag: "core", subTasks: [
+              "Brush teeth",
+              "Floss",
+              "Apply lotion",
+              "Deodorant",
+              "Style hair"
+            ] },
+          { text: "Get dressed", tag: "core" },
+          { text: "Fill water", tag: "core" },
+          { text: "Leave by 6:23", tag: "core" },
+        ]
+      },
+      {
+        title: "🕛 After Work (before 3 PM)",
+        meta: "Reset body + mind",
+        start: "12:30",
+        items: [
+          { text: "Lunch", tag: "core" },
+          { text: "Protein shake", tag: "gym" },
+          { text: "Gym (15 minutes minimum — leaving early is allowed)", tag: "gym" },
+          { text: "Shower", tag: "core" },
+        ]
+      },
+      {
+        title: "🎯 Growth Block",
+        meta: "Choose 2 — on tired days pick 1",
+        start: "15:30",
+        items: [
+          { text: "Programming – 15 min", tag: "growth" },
+          { text: "Music – 15 min", tag: "growth" },
+          { text: "Spanish – 15 min", tag: "growth" },
+        ]
+      },
+      {
+        title: "🏠 Evening",
+        meta: "Stability",
+        start: "19:00",
+        items: [
+          { text: "Light room pickup", tag: "home", subTasks: [
+              "Clothes put away",
+              "Trash emptied",
+              "Surfaces cleared"
+            ] },
+          { text: "At least 1 hour with family", tag: "core" },
+          { text: "Night hygiene (wash face, brush teeth)", tag: "core", subTasks: [
+              "Wash face",
+              "Brush teeth",
+              "Moisturize"
+            ] },
+        ]
+      }
+    ],
+
+    midweek: [
+      {
+        title: "🌅 Morning (Before 6:45 AM)",
+        meta: "Purpose: Set the tone, not rush",
+        start: "06:00",
+        items: [
+          { text: "Wake up before 6:45", tag: "core" },
+          {
+            text: "Spiritual activity",
+            tag: "core",
+            notes: "Up to 30 minutes, not forced. Shorten if needed — do not skip."
+          },
+          { text: "Make bed", tag: "core" },
+          { text: "Bathroom hygiene block", tag: "core", notes: "teeth, floss, lotion, deodorant, hair", subTasks: [
+              "Brush teeth",
+              "Floss",
+              "Apply lotion",
+              "Deodorant",
+              "Style hair"
+            ] },
+          { text: "Get dressed", tag: "core" },
+          { text: "Eat breakfast", tag: "core" },
+          { text: "Fill water", tag: "core" },
+          {
+            text: "Reminder",
+            tag: "note",
+            notes: "If the morning feels slow or heavy, shorten the spiritual block — do not skip it."
+          }
+        ]
+      },
+      {
+        title: "🕘 Mid-Morning Reset",
+        meta: "Purpose: Ground yourself",
+        start: "09:30",
+        items: [
+          {
+            text: "Talk / associate with family",
+            tag: "core",
+            notes: "Lean in if they’re available."
+          },
+          { text: "Light room pickup (daily level only)", tag: "home", subTasks: [
+              "Clothes put away",
+              "Trash emptied",
+              "Desk clear"
+            ] },
+          {
+            text: "Reminder",
+            tag: "note",
+            notes: "No deep cleaning. No projects. Just presence."
+          }
+        ]
+      },
+      {
+        title: "🎯 Growth Block",
+        meta: "Purpose: Progress, not perfection — choose 2 (or 1 if energy is low)",
+        start: "15:00",
+        items: [
+          { text: "Programming – 15 min", tag: "growth" },
+          { text: "Music – 15 min", tag: "growth" },
+          { text: "Reading – 15 min (or Spanish)", tag: "growth" },
+          {
+            text: "Reminder",
+            tag: "note",
+            notes: "On tired days pick ONE and stop. Stopping on purpose is success."
+          }
+        ]
+      },
+      {
+        title: "🕛 Midday Care",
+        meta: "Purpose: Maintain momentum",
+        start: "12:00",
+        items: [
+          { text: "Eat lunch", tag: "core" },
+          {
+            text: "Shower",
+            tag: "core",
+            notes: "If not done already."
+          },
+          {
+            text: "Reminder",
+            tag: "note",
+            notes: "Nothing fancy here. This is maintenance, not achievement."
+          }
+        ]
+      },
+      {
+        title: "🧭 Planning Block",
+        meta: "Purpose: Direction, not overthinking",
+        start: "16:30",
+        items: [
+          {
+            text: "Plan the rest of the day",
+            tag: "core",
+            notes: "3 priorities max — no full schedules."
+          },
+          {
+            text: "Example stack",
+            tag: "note",
+            notes: "One spiritual thing • One growth thing • One responsibility."
+          }
+        ]
+      },
+      {
+        title: "🏠 Evening",
+        meta: "Purpose: Stability",
+        start: "19:30",
+        items: [
+          { text: "Light room pickup (again if needed)", tag: "home", subTasks: [
+              "Clothes put away",
+              "Trash emptied",
+              "Surfaces cleared"
+            ] },
+          { text: "Spend time with family", tag: "core" },
+          { text: "Night hygiene (wash face, brush teeth)", tag: "core", subTasks: [
+              "Wash face",
+              "Brush teeth",
+              "Wind down devices"
+            ] },
+          {
+            text: "Reminder",
+            tag: "note",
+            notes: "No pressure to “make the day meaningful.” It already was."
+          }
+        ]
+      }
+    ],
+
+    service: [] // default same as midweek
+  };
+
+  function maintenanceBlock(){
+    return {
+      title: "🧹 Maintenance",
+      meta: "Room, bathroom, car rotations",
+      items: [
+        {
+          text: "Room Cleaning — Daily",
+          tag: "home",
+          subTasks: [
+            "Pick up everything off the floor",
+            "Make the bed",
+            "Clear surfaces"
+          ]
+        },
+        {
+          text: "Room Cleaning — Weekly",
+          tag: "home",
+          subTasks: [
+            "Daily tidy list",
+            "Organize drawers",
+            "Vacuum the floor"
+          ]
+        },
+        {
+          text: "Room Cleaning — Monthly",
+          tag: "home",
+          subTasks: [
+            "Dust furniture",
+            "Clean windows",
+            "Organize closet",
+            "Clean under the bed"
+          ]
+        },
+        {
+          text: "Bathroom Cleaning — Daily",
+          tag: "home",
+          subTasks: [
+            "Sink wiped and clean",
+            "Counters cleared",
+            "Nothing left out",
+            "Clothes in hamper"
+          ]
+        },
+        {
+          text: "Bathroom Cleaning — Weekly",
+          tag: "home",
+          subTasks: [
+            "Daily checklist",
+            "Vacuum or mop",
+            "Tidy drawers",
+            "Clean windows/mirrors"
+          ]
+        },
+        {
+          text: "Bathroom Cleaning — Monthly",
+          tag: "home",
+          subTasks: [
+            "Weekly checklist",
+            "Scrub bathtub",
+            "Scrub toilet",
+            "Organize supplies"
+          ]
+        },
+        {
+          text: "Car Maintenance — Weekly",
+          tag: "home",
+          subTasks: [
+            "Wipe console",
+            "Clean window smudges"
+          ]
+        },
+        {
+          text: "Car Maintenance — Biweekly",
+          tag: "home",
+          subTasks: [
+            "Weekly checklist",
+            "Car wash",
+            "Vacuum interior"
+          ]
+        },
+        {
+          text: "Weekly Room Cleaning",
+          tag: "home",
+          days: ["Monday"],
+          subTasks: [
+            "Weekly checklist",
+            "Organize closets",
+            "Fresh sheets if needed"
+          ]
+        },
+        {
+          text: "Bathroom Cleaning Focus",
+          tag: "home",
+          days: ["Monday"],
+          subTasks: [
+            "Weekly bathroom checklist",
+            "Restock toiletries",
+            "Polish mirrors"
+          ]
+        },
+        {
+          text: "Laundry Reset",
+          tag: "home",
+          days: ["Monday"],
+          subTasks: [
+            "Gather hampers",
+            "Sort whites / colors",
+            "Start first load"
+          ]
+        },
+        {
+          text: "Take Out Trash",
+          tag: "home",
+          days: ["Tuesday"],
+          subTasks: [
+            "Gather every bin",
+            "Replace liners",
+            "Wheel cans to curb"
+          ]
+        },
+        {
+          text: "Prep for the Meeting",
+          tag: "core",
+          days: ["Tuesday"],
+          subTasks: [
+            "Review agenda / notes",
+            "Pack materials",
+            "Plan outfit / timing"
+          ]
+        },
+        {
+          text: "Car Maintenance Touch-up",
+          tag: "home",
+          days: ["Tuesday"],
+          subTasks: [
+            "Console wipe down",
+            "Windows spot clean",
+            "Check washer fluid"
+          ]
+        },
+        {
+          text: "Haircut",
+          tag: "core",
+          days: ["Wednesday"],
+          subTasks: [
+            "Confirm appointment / trim plan",
+            "Set out tools / tip cash",
+            "Quick tidy after"
+          ]
+        },
+        {
+          text: "Grooming Session",
+          tag: "core",
+          days: ["Wednesday"],
+          subTasks: [
+            "Shave / beard maintenance",
+            "Clip nails",
+            "Skin-care routine"
+          ]
+        },
+        {
+          text: "Midweek Laundry",
+          tag: "home",
+          days: ["Wednesday"],
+          subTasks: [
+            "Gather workout clothes",
+            "Run at least one load",
+            "Fold / hang before bed"
+          ]
+        },
+        {
+          text: "Friday Bathroom Refresh",
+          tag: "home",
+          days: ["Friday"],
+          subTasks: [
+            "Weekly bathroom checklist",
+            "Scrub tub if needed",
+            "Replace towels"
+          ]
+        },
+        {
+          text: "Friday Room Weekly Cleaning",
+          tag: "home",
+          days: ["Friday"],
+          subTasks: [
+            "Weekly room checklist",
+            "Dust high-touch spots",
+            "Empty hampers"
+          ]
+        }
+      ]
+    };
+  }
+
+  BASE_ROUTINES.work.push(maintenanceBlock());
+  BASE_ROUTINES.midweek.push(maintenanceBlock());
+
+  BASE_ROUTINES.service = JSON.parse(JSON.stringify(BASE_ROUTINES.midweek));
+
+  // ---------- Storage (per-day) ----------
+  const todayKey = () => {
+    const d = new Date();
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth()+1).padStart(2,'0');
+    const dd = String(d.getDate()).padStart(2,'0');
+    return `${yyyy}-${mm}-${dd}`;
+  };
+
+  const LS = {
+    get(k, fallback){
+      try { return JSON.parse(localStorage.getItem(k)) ?? fallback; }
+      catch { return fallback; }
+    },
+    set(k, v){ localStorage.setItem(k, JSON.stringify(v)); }
+  };
+
+  const ROUTINES_KEY = "dailyBriefing:routines";
+
+  function uid(){
+    if(typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"){
+      return crypto.randomUUID();
+    }
+    return `uid_${Date.now().toString(36)}_${Math.random().toString(36).slice(2,8)}`;
+  }
+
+  function deepClone(obj){
+    return JSON.parse(JSON.stringify(obj));
+  }
+
+  function ensureRoutineTypes(data){
+    const clone = deepClone(data);
+    ["work","midweek","service"].forEach(type => {
+      if(!Array.isArray(clone[type])){
+        clone[type] = deepClone(BASE_ROUTINES[type] || []);
+      }
+    });
+    return clone;
+  }
+
+  function loadRoutines(){
+    const stored = LS.get(ROUTINES_KEY, null);
+    if(stored) return ensureRoutineTypes(stored);
+    const defaults = deepClone(BASE_ROUTINES);
+    LS.set(ROUTINES_KEY, defaults);
+    return defaults;
+  }
+
+  function saveRoutines(options = {}){
+    LS.set(ROUTINES_KEY, routines);
+    if(!options.skipCloud){
+      queueSupabasePush("routines");
+    }
+  }
+
+  function ensureRoutineItemIds(){
+    let dirty = false;
+    Object.values(routines).forEach(sections => {
+      if(!Array.isArray(sections)) return;
+      sections.forEach(sec => {
+        if(!Array.isArray(sec.items)) sec.items = [];
+        sec.items.forEach(item => {
+          if(!item.id){
+            item.id = uid();
+            dirty = true;
+          }
+          if(!Array.isArray(item.subTasks)){
+            item.subTasks = [];
+            dirty = true;
+          }
+          if(item.days && !Array.isArray(item.days)){
+            const parsed = String(item.days)
+              .split(",")
+              .map(part => part.trim())
+              .filter(Boolean);
+            item.days = parsed.length ? parsed : [];
+            dirty = true;
+          }
+          item.subTasks = item.subTasks.map(sub => {
+            if(typeof sub === "string"){
+              sub = { text: sub, done: false };
+            }
+            if(!sub || !sub.text) return { id: uid(), text: "", done: false };
+            if(!sub.id){
+              sub.id = uid();
+              dirty = true;
+            }
+            return {
+              id: sub.id,
+              text: sub.text,
+              done: !!sub.done
+            };
+          });
+        });
+      });
+    });
+    if(dirty) saveRoutines();
+  }
+
+  function migrateLegacyStateKeys(){
+    const mapPerType = {};
+    Object.entries(routines).forEach(([type, sections]) => {
+      mapPerType[type] = {};
+      (sections || []).forEach((sec, si) => {
+        (sec.items || []).forEach((item, ii) => {
+          mapPerType[type][`${si}:${ii}`] = item.id;
+        });
+      });
+    });
+    const translate = (key) => {
+      if(!key || !key.includes(":")) return key;
+      const currentMap = mapPerType[state.dayType] || {};
+      if(currentMap[key]) return currentMap[key];
+      for (const map of Object.values(mapPerType)){
+        if(map[key]) return map[key];
+      }
+      return null;
+    };
+    const migrate = (bucket) => {
+      if(!bucket) return {};
+      const next = {};
+      Object.entries(bucket).forEach(([key, val]) => {
+        const mapped = translate(key);
+        if(mapped) next[mapped] = val;
+      });
+      return next;
+    };
+    state.checks = migrate(state.checks);
+    state.skips = migrate(state.skips);
+  }
+
+  function migrateEventsIntoRoutine(){
+    if(!Array.isArray(state.events) || state.events.length === 0) return;
+    const sections = getRoutineSections();
+    if(sections.length === 0){
+      sections.push({
+        title: "✨ Today add-ons",
+        meta: "Drag add-ons into place",
+        start: "",
+        items: []
+      });
+    }
+    state.events.forEach(ev => {
+      sections[0].items.push({
+        id: uid(),
+        text: ev.title || "Untitled add-on",
+        time: ev.time || "",
+        notes: ev.notes || "",
+        tag: "add-on",
+        type: "addon",
+        subTasks: [],
+      });
+    });
+    state.events = [];
+    saveRoutines();
+    saveState();
+  }
+
+  const stateKey = () => `dailyBriefing:${todayKey()}`;
+  const settingsKey = () => `dailyBriefing:settings`;
+  const settings = LS.get(settingsKey(), { lastDayType: "work" });
+
+  function defaultState(){
+    return {
+      dayType: "work",
+      checks: {},     // { "sectionIndex:itemIndex": true }
+      skips: {},      // { "sectionIndex:itemIndex": true }
+      events: []      // [{time:"18:30", title:"...", notes:"..."}]
+    };
+  }
+
+  function loadState(){
+    const s = LS.get(stateKey(), null);
+    if (s) return s;
+    const fresh = defaultState();
+    fresh.dayType = settings.lastDayType || "work";
+    return fresh;
+  }
+
+  function saveState(options = {}){
+    LS.set(stateKey(), state);
+    LS.set(settingsKey(), { lastDayType: state.dayType });
+    if(!options.skipCloud){
+      queueSupabasePush("state");
+    }
+  }
+
+  let routines = loadRoutines();
+  let state = loadState();
+  if(!state.skips) state.skips = {};
+  if(!state.checks) state.checks = {};
+  ensureRoutineItemIds();
+  migrateLegacyStateKeys();
+  migrateEventsIntoRoutine();
+  let selectedRoutineId = null;
+  let dragInfo = null;
+  let dragInProgress = false;
+  let routineFilter = "all";
+
+  // ---------- UI refs ----------
+  const routineEl = document.getElementById("routine");
+  const dayTypeEl = document.getElementById("dayType");
+  const progressPill = document.getElementById("progressPill");
+  const scheduleListEl = document.getElementById("scheduleList");
+  const dayIndicatorEl = document.getElementById("dayIndicator");
+  const addRoutineBlockBtn = document.getElementById("addRoutineBlock");
+  const routineFilterEl = document.getElementById("routineFilter");
+  const subTaskStatusEl = document.getElementById("subTaskStatus");
+  const subTaskListEl = document.getElementById("subTaskList");
+  const subTaskForm = document.getElementById("subTaskForm");
+  const subTaskInput = document.getElementById("subTaskInput");
+
+  function tagLabel(tag){
+    if(tag === "core") return "core";
+    if(tag === "gym") return "gym";
+    if(tag === "growth") return "growth";
+    if(tag === "home") return "home";
+     if(tag === "add-on") return "add-on";
+    return "note";
+  }
+
+
+  function calcProgress(){
+    const sections = routines[state.dayType] || [];
+    let total = 0, done = 0;
+    sections.forEach((sec) => {
+      sec.items.forEach((item) => {
+        const key = item.id;
+        if(state.skips[key]) return;
+        total++;
+        if(state.checks[key]) done++;
+      });
+    });
+    const pct = total ? Math.round((done/total)*100) : 0;
+    progressPill.textContent = `${pct}% complete`;
+  }
+
+  function renderRoutine(){
+    routineEl.innerHTML = "";
+    ensureRoutineSelection();
+    const sections = routines[state.dayType] || [];
+
+    if(sections.length === 0){
+      routineEl.innerHTML = `<p class="muted">No routine blocks yet. Use "Add block" to create one.</p>`;
+      calcProgress();
+      renderSchedule();
+      renderSubTaskPanel();
+      return;
+    }
+
+    sections.forEach((sec, si) => {
+      const details = document.createElement("details");
+      details.open = true;
+
+      const summary = document.createElement("summary");
+      const left = document.createElement("div");
+      left.textContent = sec.title;
+
+      const meta = document.createElement("div");
+      meta.className = "meta";
+      meta.textContent = sec.meta || "";
+
+      summary.appendChild(left);
+      summary.appendChild(meta);
+      details.appendChild(summary);
+
+      const list = document.createElement("div");
+      list.className = "list";
+      list.addEventListener("dragover", (e) => handleDragOver(e));
+      list.addEventListener("drop", (e) => handleDrop(e, si, null));
+
+      sec.items.forEach((it, ii) => {
+        const itemId = it.id;
+        const skipped = !!state.skips[itemId];
+        const matchesFilter = routineFilter === "all" || (it.tag || "note") === routineFilter;
+        const row = document.createElement("div");
+        row.className = "row";
+        row.dataset.id = itemId;
+        if(skipped) row.classList.add("skipped");
+        if(selectedRoutineId === itemId) row.classList.add("selected");
+        row.style.display = matchesFilter ? "flex" : "none";
+        row.draggable = true;
+        row.addEventListener("dragstart", (e) => handleDragStart(e, si, ii));
+        row.addEventListener("dragover", (e) => handleDragOver(e));
+        row.addEventListener("drop", (e) => handleDrop(e, si, ii));
+        row.addEventListener("dragend", handleDragEnd);
+        row.addEventListener("click", (e) => {
+          if(dragInProgress) return;
+          if(e.target.closest("button") || e.target.closest("input") || e.target.closest("select")) return;
+          selectRoutineItem(itemId);
+        });
+
+        const l = document.createElement("div");
+        l.className = "left";
+
+        const chk = document.createElement("input");
+        chk.type = "checkbox";
+        chk.className = "chk";
+        chk.checked = !!state.checks[itemId];
+        chk.disabled = skipped;
+        chk.addEventListener("change", () => {
+          if(chk.checked) state.checks[itemId] = true;
+          else delete state.checks[itemId];
+          saveState();
+          calcProgress();
+        });
+
+        const textWrap = document.createElement("div");
+        textWrap.className = "text-wrap";
+        textWrap.style.minWidth = "0";
+
+        const title = document.createElement("div");
+        title.className = "title";
+        title.textContent = it.text;
+        textWrap.appendChild(title);
+
+        if(it.time){
+          const timeChip = document.createElement("div");
+          timeChip.className = "time-chip";
+          timeChip.textContent = it.time;
+          textWrap.appendChild(timeChip);
+        }
+
+        if(it.notes){
+          const note = document.createElement("div");
+          note.className = "notes";
+          note.textContent = it.notes;
+          textWrap.appendChild(note);
+        }
+        if(it.days && it.days.length){
+          const dayHint = document.createElement("div");
+          dayHint.className = "days-hint";
+          if(it.days.length === 1) dayHint.textContent = `${it.days[0]} focus`;
+          else dayHint.textContent = `${it.days.join(", ")} only`;
+          textWrap.appendChild(dayHint);
+        }
+        if((it.subTasks || []).length){
+          const hint = document.createElement("div");
+          hint.className = "sub-hint";
+          hint.textContent = `${it.subTasks.length} sub items`;
+          textWrap.appendChild(hint);
+        }
+
+        l.appendChild(chk);
+        l.appendChild(textWrap);
+
+        const actions = document.createElement("div");
+        actions.className = "row-actions";
+
+        const priorityControl = document.createElement("div");
+        priorityControl.className = "priority-control";
+        const priorityLabel = document.createElement("span");
+        priorityLabel.className = "tag";
+        priorityLabel.textContent = "Priority";
+        const prioritySelect = document.createElement("select");
+        prioritySelect.className = "routine-priority-select";
+        ["core","home","growth","gym","add-on","note"].forEach(value => {
+          const option = document.createElement("option");
+          option.value = value;
+          option.textContent = value;
+          prioritySelect.appendChild(option);
+        });
+        prioritySelect.value = it.tag || "note";
+        prioritySelect.addEventListener("change", () => updateRoutinePriority(itemId, prioritySelect.value));
+        priorityControl.appendChild(priorityLabel);
+        priorityControl.appendChild(prioritySelect);
+
+        const buttonsWrap = document.createElement("div");
+        buttonsWrap.className = "action-buttons";
+
+        const skipBtn = document.createElement("button");
+        skipBtn.className = "text-btn ghost";
+        skipBtn.type = "button";
+        skipBtn.textContent = skipped ? "Unskip" : "Skip";
+        skipBtn.addEventListener("click", () => toggleRoutineSkip(itemId));
+
+        const detailBtn = document.createElement("button");
+        detailBtn.className = "text-btn ghost";
+        detailBtn.type = "button";
+        detailBtn.textContent = "Details";
+        detailBtn.addEventListener("click", () => selectRoutineItem(itemId));
+
+        const editBtn = document.createElement("button");
+        editBtn.className = "text-btn ghost";
+        editBtn.type = "button";
+        editBtn.textContent = "Edit";
+        editBtn.addEventListener("click", () => editRoutineItem(si, ii));
+
+        const deleteBtn = document.createElement("button");
+        deleteBtn.className = "text-btn danger";
+        deleteBtn.type = "button";
+        deleteBtn.textContent = "Delete";
+        deleteBtn.addEventListener("click", () => deleteRoutineItem(si, ii));
+
+        buttonsWrap.appendChild(skipBtn);
+        buttonsWrap.appendChild(detailBtn);
+        buttonsWrap.appendChild(editBtn);
+        buttonsWrap.appendChild(deleteBtn);
+
+        actions.appendChild(priorityControl);
+        actions.appendChild(buttonsWrap);
+
+        row.appendChild(l);
+        row.appendChild(actions);
+
+        list.appendChild(row);
+      });
+
+      const blockActions = document.createElement("div");
+      blockActions.className = "routine-toolbar";
+      blockActions.style.margin = ".5rem .2rem 0";
+
+      const addItemBtn = document.createElement("button");
+      addItemBtn.className = "text-btn";
+      addItemBtn.type = "button";
+      addItemBtn.textContent = "Add item";
+      addItemBtn.addEventListener("click", () => addRoutineItem(si));
+
+      const editBlockBtn = document.createElement("button");
+      editBlockBtn.className = "text-btn ghost";
+      editBlockBtn.type = "button";
+      editBlockBtn.textContent = "Edit block";
+      editBlockBtn.addEventListener("click", () => editRoutineBlock(si));
+
+      const deleteBlockBtn = document.createElement("button");
+      deleteBlockBtn.className = "text-btn danger";
+      deleteBlockBtn.type = "button";
+      deleteBlockBtn.textContent = "Delete block";
+      deleteBlockBtn.addEventListener("click", () => deleteRoutineBlock(si));
+
+      blockActions.appendChild(addItemBtn);
+      blockActions.appendChild(editBlockBtn);
+      blockActions.appendChild(deleteBlockBtn);
+
+      details.appendChild(list);
+      details.appendChild(blockActions);
+      routineEl.appendChild(details);
+    });
+
+    calcProgress();
+    renderSchedule();
+    renderSubTaskPanel();
+  }
+
+  function getRoutineSections(){
+    if(!Array.isArray(routines[state.dayType])){
+      routines[state.dayType] = [];
+    }
+    return routines[state.dayType];
+  }
+
+  function focusFirstRoutineWithSubTasks(){
+    const sections = routines[state.dayType] || [];
+    for(const block of sections){
+      for(const item of block.items || []){
+        if(item.subTasks && item.subTasks.length){
+          selectedRoutineId = item.id;
+          return;
+        }
+      }
+    }
+    selectedRoutineId = null;
+  }
+
+  function ensureRoutineSelection(){
+    if(selectedRoutineId && findRoutineItemById(selectedRoutineId)){
+      return;
+    }
+    focusFirstRoutineWithSubTasks();
+  }
+
+  function findRoutineItemById(id){
+    if(!id) return null;
+    const sections = routines[state.dayType] || [];
+    for(let si = 0; si < sections.length; si++){
+      const block = sections[si];
+      for(let ii = 0; ii < block.items.length; ii++){
+        if(block.items[ii].id === id){
+          return { item: block.items[ii], sectionIndex: si, itemIndex: ii, section: block };
+        }
+      }
+    }
+    return null;
+  }
+
+  function removeStateForItem(itemId){
+    delete state.checks[itemId];
+    delete state.skips[itemId];
+  }
+
+  function selectRoutineItem(itemId){
+    selectedRoutineId = itemId;
+    renderRoutine();
+    renderSubTaskPanel();
+  }
+
+  function getSelectedRoutineEntry(){
+    if(!selectedRoutineId) return null;
+    const entry = findRoutineItemById(selectedRoutineId);
+    if(!entry){
+      selectedRoutineId = null;
+      return null;
+    }
+    if(!Array.isArray(entry.item.subTasks)) entry.item.subTasks = [];
+    return entry;
+  }
+
+  function renderSubTaskPanel(){
+    if(!subTaskStatusEl || !subTaskListEl || !subTaskForm) return;
+    const entry = getSelectedRoutineEntry();
+    if(!entry){
+      subTaskStatusEl.textContent = "Click a routine row to manage its sub checklist.";
+      subTaskListEl.innerHTML = "";
+      subTaskForm.style.display = "none";
+      if(subTaskInput) subTaskInput.value = "";
+      return;
+    }
+    subTaskStatusEl.textContent = `${entry.section.title}: ${entry.item.text}`;
+    const subs = entry.item.subTasks || [];
+    if(subs.length === 0){
+      subTaskListEl.innerHTML = `<p class="muted">No sub tasks yet.</p>`;
+    } else {
+      subTaskListEl.innerHTML = "";
+      subs.forEach(sub => {
+        const row = document.createElement("div");
+        row.className = "subtask-row";
+        const label = document.createElement("label");
+        const chk = document.createElement("input");
+        chk.type = "checkbox";
+        chk.checked = !!sub.done;
+        chk.addEventListener("change", () => toggleSubTask(sub.id));
+        const span = document.createElement("span");
+        span.textContent = sub.text;
+        label.appendChild(chk);
+        label.appendChild(span);
+
+        const del = document.createElement("button");
+        del.type = "button";
+        del.className = "text-btn danger";
+        del.textContent = "Delete";
+        del.addEventListener("click", () => deleteSubTask(sub.id));
+
+        row.appendChild(label);
+        row.appendChild(del);
+        subTaskListEl.appendChild(row);
+      });
+    }
+    subTaskForm.style.display = "flex";
+  }
+
+  function addSubTask(text){
+    const entry = getSelectedRoutineEntry();
+    if(!entry) return;
+    entry.item.subTasks.push({
+      id: uid(),
+      text,
+      done: false,
+    });
+    saveRoutines();
+    renderSubTaskPanel();
+  }
+
+  function toggleSubTask(subTaskId){
+    const entry = getSelectedRoutineEntry();
+    if(!entry) return;
+    const sub = (entry.item.subTasks || []).find(st => st.id === subTaskId);
+    if(!sub) return;
+    sub.done = !sub.done;
+    saveRoutines();
+    renderSubTaskPanel();
+  }
+
+  function deleteSubTask(subTaskId){
+    const entry = getSelectedRoutineEntry();
+    if(!entry) return;
+    const list = entry.item.subTasks || [];
+    const idx = list.findIndex(st => st.id === subTaskId);
+    if(idx === -1) return;
+    list.splice(idx, 1);
+    saveRoutines();
+    renderSubTaskPanel();
+  }
+
+  function handleDragStart(event, sectionIndex, itemIndex){
+    dragInProgress = true;
+    dragInfo = { sectionIndex, itemIndex };
+    event.dataTransfer?.setData("text/plain", "routine");
+    event.dataTransfer?.setDragImage(event.currentTarget, 20, 20);
+  }
+
+  function handleDragOver(event){
+    event.preventDefault();
+    event.dataTransfer && (event.dataTransfer.dropEffect = "move");
+  }
+
+  function handleDrop(event, targetSection, targetIndex){
+    event.preventDefault();
+    if(!dragInfo) return;
+    moveRoutineItem(dragInfo.sectionIndex, dragInfo.itemIndex, targetSection, targetIndex);
+    dragInfo = null;
+    dragInProgress = false;
+  }
+
+  function handleDragEnd(){
+    dragInProgress = false;
+    dragInfo = null;
+  }
+
+  function moveRoutineItem(fromSection, fromIndex, toSection, toIndex){
+    if(fromSection === undefined || fromIndex === undefined || toSection === undefined) return;
+    const sections = getRoutineSections();
+    const sourceBlock = sections[fromSection];
+    const targetBlock = sections[toSection];
+    if(!sourceBlock || !targetBlock) return;
+    const [item] = sourceBlock.items.splice(fromIndex, 1);
+    if(!item) return;
+    if(toIndex === null || toIndex === undefined || toIndex >= targetBlock.items.length){
+      targetBlock.items.push(item);
+    } else {
+      if(fromSection === toSection && fromIndex < toIndex) toIndex -= 1;
+      targetBlock.items.splice(Math.max(0, toIndex), 0, item);
+    }
+    saveRoutines();
+    renderRoutine();
+  }
+
+  function createAddOnItem({ title, time, notes }){
+    return {
+      id: uid(),
+      text: title,
+      time,
+      notes,
+      tag: "add-on",
+      type: "addon",
+      subTasks: [],
+    };
+  }
+
+  function promptBlockData(existing = {}){
+    const title = prompt("Block title", existing.title || "");
+    if(title === null) return null;
+    const trimmedTitle = title.trim();
+    if(!trimmedTitle){
+      alert("Give the block a title.");
+      return null;
+    }
+    const start = prompt("Start time (HH:MM, optional)", existing.start || "");
+    if(start === null) return null;
+    const meta = prompt("Subtitle / goal", existing.meta || "");
+    if(meta === null) return null;
+    return {
+      title: trimmedTitle,
+      start: (start || "").trim(),
+      meta: (meta || "").trim(),
+    };
+  }
+
+  function promptRoutineItem(existing = {}){
+    const text = prompt("Routine item", existing.text || "");
+    if(text === null) return null;
+    const trimmedText = text.trim();
+    if(!trimmedText){
+      alert("Describe the routine item.");
+      return null;
+    }
+    const tag = prompt("Tag label (core / home / gym / growth…)", existing.tag || "core");
+    if(tag === null) return null;
+    const time = prompt("Time (HH:MM, optional)", existing.time || "");
+    if(time === null) return null;
+    const notes = prompt("Notes / details (optional)", existing.notes || "");
+    if(notes === null) return null;
+    return {
+      text: trimmedText,
+      tag: (tag || "").trim() || "note",
+      time: (time || "").trim(),
+      notes: (notes || "").trim(),
+    };
+  }
+
+  function addRoutineBlock(){
+    const sections = getRoutineSections();
+    const data = promptBlockData();
+    if(!data) return;
+    data.items = [];
+    sections.push(data);
+    saveRoutines();
+    renderRoutine();
+  }
+
+  function editRoutineBlock(sectionIndex){
+    const sections = getRoutineSections();
+    const block = sections[sectionIndex];
+    if(!block) return;
+    const data = promptBlockData(block);
+    if(!data) return;
+    block.title = data.title;
+    block.meta = data.meta;
+    block.start = data.start;
+    saveRoutines();
+    renderRoutine();
+  }
+
+  function deleteRoutineBlock(sectionIndex){
+    const sections = getRoutineSections();
+    if(!sections[sectionIndex]) return;
+    if(!confirm("Delete this entire block?")) return;
+    sections[sectionIndex].items.forEach(item => removeStateForItem(item.id));
+    sections.splice(sectionIndex, 1);
+    saveRoutines();
+    saveState();
+    if(selectedRoutineId && !findRoutineItemById(selectedRoutineId)) selectedRoutineId = null;
+    renderRoutine();
+  }
+
+  function addRoutineItem(sectionIndex){
+    const sections = getRoutineSections();
+    const block = sections[sectionIndex];
+    if(!block) return;
+    const item = promptRoutineItem();
+    if(!item) return;
+    block.items.push({
+      ...item,
+      id: uid(),
+      subTasks: [],
+    });
+    saveRoutines();
+    renderRoutine();
+  }
+
+  function editRoutineItem(sectionIndex, itemIndex){
+    const sections = getRoutineSections();
+    const block = sections[sectionIndex];
+    if(!block || !block.items[itemIndex]) return;
+    const item = promptRoutineItem(block.items[itemIndex]);
+    if(!item) return;
+    const target = block.items[itemIndex];
+    target.text = item.text;
+    target.tag = item.tag;
+    target.time = item.time;
+    target.notes = item.notes;
+    saveRoutines();
+    renderRoutine();
+  }
+
+  function deleteRoutineItem(sectionIndex, itemIndex){
+    const sections = getRoutineSections();
+    const block = sections[sectionIndex];
+    if(!block || !block.items[itemIndex]) return;
+    if(!confirm("Delete this routine item?")) return;
+    const removed = block.items.splice(itemIndex, 1)[0];
+    if(removed){
+      removeStateForItem(removed.id);
+      if(selectedRoutineId === removed.id) selectedRoutineId = null;
+    }
+    saveRoutines();
+    saveState();
+    renderRoutine();
+  }
+
+  function toggleRoutineSkip(itemId){
+    if(!state.skips) state.skips = {};
+    if(state.skips[itemId]) delete state.skips[itemId];
+    else {
+      state.skips[itemId] = true;
+      delete state.checks[itemId];
+    }
+    saveState();
+    renderRoutine();
+  }
+
+  function updateRoutinePriority(itemId, priority){
+    const entry = findRoutineItemById(itemId);
+    if(!entry) return;
+    entry.item.tag = priority;
+    saveRoutines();
+    renderRoutine();
+  }
+
+  function parseTimeToMinutes(time){
+    if(!time || typeof time !== "string") return null;
+    const [h, m] = time.split(":");
+    const hours = Number(h);
+    const minutes = Number(m);
+    if(Number.isNaN(hours) || Number.isNaN(minutes)) return null;
+    return hours * 60 + minutes;
+  }
+
+  function createNowMarker(label){
+    const marker = document.createElement("div");
+    marker.className = "timeline-marker";
+    marker.textContent = label;
+    return marker;
+  }
+
+  function updateDayIndicator(items){
+    if(!dayIndicatorEl) return;
+    if(!Array.isArray(items) || items.length === 0){
+      dayIndicatorEl.textContent = "No schedule items yet.";
+      return;
+    }
+    const now = new Date();
+    const nowMinutes = now.getHours() * 60 + now.getMinutes();
+    const timed = items
+      .map(item => ({ item, minutes: parseTimeToMinutes(item.time) }))
+      .filter(entry => entry.minutes !== null)
+      .sort((a,b) => a.minutes - b.minutes);
+    if(timed.length === 0){
+      dayIndicatorEl.textContent = "Flow through the day — no timed blocks.";
+      return;
+    }
+    const upcoming = timed.find(entry => entry.minutes >= nowMinutes);
+    if(upcoming){
+      dayIndicatorEl.textContent = `${upcoming.item.time} next: ${upcoming.item.title}`;
+    } else {
+      const last = timed[timed.length - 1];
+      dayIndicatorEl.textContent = `Last timed block was at ${last.item.time}.`;
+    }
+  }
+
+  function escapeHtml(s){
+    return String(s)
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+
+  function renderSchedule(){
+    if(!scheduleListEl) return;
+    const today = new Date();
+    const baseBlocks = (routines[state.dayType] || []).map(sec => ({
+      type: "routine",
+      time: sec.start || "",
+      title: sec.title,
+      meta: sec.meta || "",
+    }));
+    const addOns = [];
+    (routines[state.dayType] || []).forEach(sec => {
+      (sec.items || []).forEach(item => {
+        if(item.type === "addon"){
+          addOns.push({
+            type: "addon",
+            time: item.time || "",
+            title: item.text || "Add-on",
+            meta: item.notes || sec.title || "",
+          });
+        }
+      });
+    });
+    const items = [...baseBlocks, ...addOns];
+    if(items.length === 0){
+      scheduleListEl.innerHTML = `<p class="muted">No schedule items yet. Add an event or keep rolling with the routine.</p>`;
+      updateDayIndicator([]);
+      return;
+    }
+    items.sort((a,b) => {
+      if(a.time && b.time) return a.time.localeCompare(b.time);
+      if(a.time) return -1;
+      if(b.time) return 1;
+      return 0;
+    });
+    scheduleListEl.innerHTML = "";
+    const now = new Date();
+    const nowMinutes = now.getHours() * 60 + now.getMinutes();
+    const hasTimedItems = items.some(it => parseTimeToMinutes(it.time) !== null);
+    let markerInserted = !hasTimedItems;
+    let lastTimedMinutes = null;
+
+    items.forEach(item => {
+      const itemMinutes = parseTimeToMinutes(item.time);
+      if(itemMinutes !== null){
+        lastTimedMinutes = itemMinutes;
+        if(nowMinutes > itemMinutes){
+          // labeled later by class
+        }
+      }
+      if(hasTimedItems && !markerInserted && itemMinutes !== null && nowMinutes < itemMinutes){
+        scheduleListEl.appendChild(createNowMarker("You are here"));
+        markerInserted = true;
+      }
+      const row = document.createElement("div");
+      row.className = "timeline-item";
+      if(itemMinutes !== null && nowMinutes > itemMinutes){
+        row.classList.add("past");
+      }
+      let icon = "•";
+      if(item.type === "routine") icon = "R";
+      if(item.type === "event" || item.type === "addon") icon = "➕";
+      const label = item.type === "routine" ? "Routine block" : "Add-on";
+      const metaText = `${item.time ? `<strong>${escapeHtml(item.time)}</strong> • ` : ""}${label}${item.meta ? ` — ${escapeHtml(item.meta)}` : ""}`;
+      row.innerHTML = `
+        <div class="timeline-icon">${icon}</div>
+        <div class="timeline-body">
+          <div class="title">${escapeHtml(item.title)}</div>
+          <div class="timeline-meta">${metaText}</div>
+        </div>
+      `;
+      scheduleListEl.appendChild(row);
+    });
+    if(hasTimedItems && !markerInserted){
+      const label = lastTimedMinutes !== null && nowMinutes > lastTimedMinutes
+        ? "You're past today's timed blocks"
+        : "You are here";
+      scheduleListEl.appendChild(createNowMarker(label));
+    }
+    updateDayIndicator(items);
+  }
+  // ---------- Events actions ----------
+  document.getElementById("addEvent").addEventListener("click", () => {
+    const time = document.getElementById("eventTime").value;
+    const title = document.getElementById("eventTitle").value.trim();
+    const notes = document.getElementById("eventNotes").value.trim();
+
+    if(!title){
+      alert("Give the event a title (ex: Party / Appointment).");
+      return;
+    }
+
+    const addOn = createAddOnItem({ title, time, notes });
+    const sections = getRoutineSections();
+    if(sections.length === 0){
+      sections.push({
+        title: "✨ Today add-ons",
+        meta: "Drag add-ons into place",
+        start: "",
+        items: [],
+      });
+    }
+    sections[0].items.push(addOn);
+    saveRoutines();
+    routineFilter = "all";
+    if(routineFilterEl) routineFilterEl.value = "all";
+    document.getElementById("eventTitle").value = "";
+    document.getElementById("eventTime").value = "";
+    document.getElementById("eventNotes").value = "";
+    renderRoutine();
+    renderSchedule();
+    selectRoutineItem(addOn.id);
+  });
+
+  // ---------- Day type ----------
+  dayTypeEl.value = state.dayType;
+  dayTypeEl.addEventListener("change", () => {
+    state.dayType = dayTypeEl.value;
+    selectedRoutineId = null;
+    saveState();
+    renderRoutine();
+    renderSubTaskPanel();
+  });
+
+  // ---------- Reset today ----------
+  document.getElementById("resetChecks").addEventListener("click", () => {
+    if(!confirm("Reset checkmarks for today? (Add-ons stay.)")) return;
+    state.checks = {};
+    state.skips = {};
+    saveState();
+    renderRoutine();
+  });
+
+  if(addRoutineBlockBtn){
+    addRoutineBlockBtn.addEventListener("click", () => addRoutineBlock());
+  }
+
+  if(routineFilterEl){
+    routineFilterEl.value = routineFilter;
+    routineFilterEl.addEventListener("change", () => {
+      routineFilter = routineFilterEl.value;
+      renderRoutine();
+    });
+  }
+
+  if(subTaskForm){
+    subTaskForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const text = subTaskInput.value.trim();
+      if(!text){
+        alert("Describe the sub task.");
+        return;
+      }
+      addSubTask(text);
+      subTaskInput.value = "";
+    });
+  }
+
+  // ---------- Init ----------
+  renderRoutine();
+  if(supabaseClient){
+    syncFromSupabase();
+  }
+  setInterval(() => renderSchedule(), 60000);
+</script>
+</body>
+</html>
