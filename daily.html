@@ -321,6 +321,36 @@
     .subtask-row input[type="checkbox"]{width:16px; height:16px; accent-color: var(--accent)}
     .subtask-form{display:flex; gap:.4rem; flex-wrap:wrap}
     .subtask-form input{flex:1; min-width:160px}
+    .modal-overlay{
+      position:fixed; inset:0; background:rgba(0,0,0,.6);
+      display:flex; align-items:center; justify-content:center;
+      z-index:100;
+      backdrop-filter: blur(4px);
+    }
+    .modal{
+      width:min(420px, 90%);
+      background: var(--surface);
+      border-radius: 18px;
+      border:1px solid var(--border);
+      box-shadow: var(--shadow);
+      padding:1.2rem;
+      display:flex;
+      flex-direction:column;
+      gap:.9rem;
+    }
+    .modal h3{margin:0; font-size:1.1rem}
+    .modal form{display:flex; flex-direction:column; gap:.75rem}
+    .modal label{font-weight:600; font-size:.9rem}
+    .modal input, .modal textarea, .modal select{
+      width:100%;
+    }
+    .modal .modal-actions{
+      display:flex;
+      justify-content:flex-end;
+      gap:.5rem;
+      flex-wrap:wrap;
+    }
+    .hidden{display:none !important}
 
     button.text-btn{
       background: color-mix(in oklab, var(--surface) 60%, transparent);
@@ -362,6 +392,47 @@
     .event .notes{color: var(--muted); margin-top:.15rem; font-size:.92rem}
 
     footer{padding:1.6rem 0; color:var(--muted); border-top:1px solid var(--border)}
+
+    @media (max-width: 640px){
+      .row{
+        flex-direction:column;
+        align-items:stretch;
+      }
+      .row-actions{
+        width:100%;
+        min-width:0;
+        align-items:flex-start;
+      }
+      .row-actions .action-buttons{
+        justify-content:flex-start;
+      }
+      .priority-control{
+        width:100%;
+        justify-content:flex-start;
+      }
+      .form{
+        grid-template-columns:1fr;
+      }
+      .form label,
+      .form input,
+      .form textarea,
+      .form button{
+        grid-column:1 / -1;
+      }
+      .controls{
+        flex-direction:column;
+        align-items:flex-start;
+      }
+      .routine-toolbar{
+        flex-direction:column;
+        align-items:flex-start;
+      }
+      .modal{
+        width: min(520px, 95%);
+        max-height: 90vh;
+        overflow:auto;
+      }
+    }
   </style>
 </head>
 
@@ -502,6 +573,61 @@
       <small>Daily Briefing • Built with semantic HTML & handcrafted CSS</small>
     </div>
   </footer>
+
+  <div class="modal-overlay hidden" id="editModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal">
+      <h3 id="modalTitle">Edit</h3>
+      <form id="modalForm">
+        <div id="blockFields">
+          <label for="blockTitleInput">Block title</label>
+          <input id="blockTitleInput" placeholder="Ex: 🏠 Evening" />
+
+          <label for="blockStartInput">Start time (optional)</label>
+          <input id="blockStartInput" placeholder="19:30" />
+
+          <label for="blockMetaInput">Subtitle / purpose</label>
+          <input id="blockMetaInput" placeholder="Why this block matters" />
+        </div>
+
+        <div id="itemFields">
+          <label for="itemTextInput">Routine item</label>
+          <input id="itemTextInput" placeholder="Ex: Light room pickup" />
+
+          <label for="itemTagSelect">Priority / tag</label>
+          <select id="itemTagSelect">
+            <option value="core">core</option>
+            <option value="home">home</option>
+            <option value="growth">growth</option>
+            <option value="gym">gym</option>
+            <option value="add-on">add-on</option>
+            <option value="note">note</option>
+          </select>
+
+          <label for="itemTimeInput">Time (optional)</label>
+          <input id="itemTimeInput" placeholder="07:45" />
+
+          <label for="itemNotesInput">Notes (optional)</label>
+          <textarea id="itemNotesInput" placeholder="Context, reminders, etc."></textarea>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" id="modalCancel" class="text-btn ghost">Cancel</button>
+          <button type="submit" class="btn primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-overlay hidden" id="confirmModal" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+    <div class="modal">
+      <h3 id="confirmTitle">Are you sure?</h3>
+      <p id="confirmMessage" class="muted"></p>
+      <div class="modal-actions">
+        <button type="button" id="confirmCancel" class="text-btn ghost">Cancel</button>
+        <button type="button" id="confirmDanger" class="btn primary" style="background: #d9534f; border:none">Delete</button>
+      </div>
+    </div>
+  </div>
 
 <script>
   // Update year
@@ -1222,6 +1348,26 @@
   const subTaskListEl = document.getElementById("subTaskList");
   const subTaskForm = document.getElementById("subTaskForm");
   const subTaskInput = document.getElementById("subTaskInput");
+  const modalOverlay = document.getElementById("editModal");
+  const modalTitleEl = document.getElementById("modalTitle");
+  const modalForm = document.getElementById("modalForm");
+  const modalCancelBtn = document.getElementById("modalCancel");
+  const blockFieldsWrap = document.getElementById("blockFields");
+  const blockTitleInput = document.getElementById("blockTitleInput");
+  const blockStartInput = document.getElementById("blockStartInput");
+  const blockMetaInput = document.getElementById("blockMetaInput");
+  const itemFieldsWrap = document.getElementById("itemFields");
+  const itemTextInput = document.getElementById("itemTextInput");
+  const itemTagSelect = document.getElementById("itemTagSelect");
+  const itemTimeInput = document.getElementById("itemTimeInput");
+  const itemNotesInput = document.getElementById("itemNotesInput");
+  let modalContext = null;
+  const confirmOverlay = document.getElementById("confirmModal");
+  const confirmTitleEl = document.getElementById("confirmTitle");
+  const confirmMessageEl = document.getElementById("confirmMessage");
+  const confirmDangerBtn = document.getElementById("confirmDanger");
+  const confirmCancelBtn = document.getElementById("confirmCancel");
+  let confirmContext = null;
 
   function tagLabel(tag){
     if(tag === "core") return "core";
@@ -1649,125 +1795,223 @@
     };
   }
 
-  function promptBlockData(existing = {}){
-    const title = prompt("Block title", existing.title || "");
-    if(title === null) return null;
-    const trimmedTitle = title.trim();
-    if(!trimmedTitle){
-      alert("Give the block a title.");
-      return null;
-    }
-    const start = prompt("Start time (HH:MM, optional)", existing.start || "");
-    if(start === null) return null;
-    const meta = prompt("Subtitle / goal", existing.meta || "");
-    if(meta === null) return null;
-    return {
-      title: trimmedTitle,
-      start: (start || "").trim(),
-      meta: (meta || "").trim(),
-    };
+  function toggleModalFields(type){
+    if(!blockFieldsWrap || !itemFieldsWrap) return;
+    blockFieldsWrap.classList.toggle("hidden", type !== "block");
+    itemFieldsWrap.classList.toggle("hidden", type !== "item");
   }
 
-  function promptRoutineItem(existing = {}){
-    const text = prompt("Routine item", existing.text || "");
-    if(text === null) return null;
-    const trimmedText = text.trim();
-    if(!trimmedText){
-      alert("Describe the routine item.");
-      return null;
+  function openBlockModal(mode, sectionIndex = null){
+    modalContext = { type: "block", mode, sectionIndex };
+    toggleModalFields("block");
+    modalTitleEl.textContent = mode === "add" ? "Add routine block" : "Edit routine block";
+    blockTitleInput.value = "";
+    blockStartInput.value = "";
+    blockMetaInput.value = "";
+    if(mode === "edit"){
+      const sections = getRoutineSections();
+      const block = sections[sectionIndex];
+      if(!block){
+        modalContext = null;
+        return;
+      }
+      blockTitleInput.value = block.title || "";
+      blockStartInput.value = block.start || "";
+      blockMetaInput.value = block.meta || "";
     }
-    const tag = prompt("Tag label (core / home / gym / growth…)", existing.tag || "core");
-    if(tag === null) return null;
-    const time = prompt("Time (HH:MM, optional)", existing.time || "");
-    if(time === null) return null;
-    const notes = prompt("Notes / details (optional)", existing.notes || "");
-    if(notes === null) return null;
-    return {
-      text: trimmedText,
-      tag: (tag || "").trim() || "note",
-      time: (time || "").trim(),
-      notes: (notes || "").trim(),
-    };
+    modalOverlay.classList.remove("hidden");
+    blockTitleInput?.focus();
+  }
+
+  function openItemModal(mode, sectionIndex, itemIndex = null){
+    modalContext = { type: "item", mode, sectionIndex, itemIndex };
+    toggleModalFields("item");
+    modalTitleEl.textContent = mode === "add" ? "Add routine item" : "Edit routine item";
+    itemTextInput.value = "";
+    itemTagSelect.value = "note";
+    itemTimeInput.value = "";
+    itemNotesInput.value = "";
+    if(mode === "edit"){
+      const sections = getRoutineSections();
+      const block = sections[sectionIndex];
+      if(!block || !block.items[itemIndex]){
+        modalContext = null;
+        return;
+      }
+      const item = block.items[itemIndex];
+      itemTextInput.value = item.text || "";
+      itemTagSelect.value = item.tag || "note";
+      itemTimeInput.value = item.time || "";
+      itemNotesInput.value = item.notes || "";
+    } else {
+      const sections = getRoutineSections();
+      const block = sections[sectionIndex];
+      if(block && block.items.length){
+        const last = block.items[block.items.length-1];
+        if(last.tag) itemTagSelect.value = last.tag;
+      }
+    }
+    modalOverlay.classList.remove("hidden");
+    itemTextInput?.focus();
+  }
+
+  function closeModal(){
+    modalOverlay?.classList.add("hidden");
+    modalContext = null;
+    modalForm?.reset();
+  }
+
+  function openDeleteConfirm({ type, sectionIndex, itemIndex = null, label }){
+    confirmContext = { type, sectionIndex, itemIndex };
+    if(confirmTitleEl){
+      confirmTitleEl.textContent = type === "block" ? "Delete block?" : "Delete item?";
+    }
+    if(confirmMessageEl){
+      confirmMessageEl.textContent = label || "Delete?";
+    }
+    confirmOverlay?.classList.remove("hidden");
+  }
+
+  function closeDeleteConfirm(){
+    confirmOverlay?.classList.add("hidden");
+    confirmContext = null;
+  }
+
+  function handleModalSubmit(event){
+    event.preventDefault();
+    if(!modalContext) return;
+    if(modalContext.type === "block"){
+      handleBlockModalSubmit();
+    } else if(modalContext.type === "item"){
+      handleItemModalSubmit();
+    }
+  }
+
+  function handleBlockModalSubmit(){
+    const title = (blockTitleInput.value || "").trim();
+    const start = (blockStartInput.value || "").trim();
+    const meta = (blockMetaInput.value || "").trim();
+    if(!title){
+      alert("Give the block a title.");
+      return;
+    }
+    const sections = getRoutineSections();
+    if(modalContext.mode === "add"){
+      sections.push({
+        title,
+        start,
+        meta,
+        items: []
+      });
+    } else if(modalContext.mode === "edit"){
+      const block = sections[modalContext.sectionIndex];
+      if(!block) return;
+      block.title = title;
+      block.start = start;
+      block.meta = meta;
+    }
+    saveRoutines();
+    renderRoutine();
+    closeModal();
+  }
+
+  function handleItemModalSubmit(){
+    const text = (itemTextInput.value || "").trim();
+    const tag = (itemTagSelect.value || "").trim() || "note";
+    const time = (itemTimeInput.value || "").trim();
+    const notes = (itemNotesInput.value || "").trim();
+    if(!text){
+      alert("Describe the routine item.");
+      return;
+    }
+    const sections = getRoutineSections();
+    const block = sections[modalContext.sectionIndex];
+    if(!block) return;
+    if(modalContext.mode === "add"){
+      block.items.push({
+        text,
+        tag,
+        time,
+        notes,
+        id: uid(),
+        subTasks: [],
+      });
+    } else if(modalContext.mode === "edit"){
+      const target = block.items[modalContext.itemIndex];
+      if(!target) return;
+      target.text = text;
+      target.tag = tag;
+      target.time = time;
+      target.notes = notes;
+    }
+    saveRoutines();
+    renderRoutine();
+    closeModal();
+  }
+
+  function handleConfirmDelete(){
+    if(!confirmContext) return;
+    const sections = getRoutineSections();
+    if(confirmContext.type === "block"){
+      const block = sections[confirmContext.sectionIndex];
+      if(block){
+        block.items.forEach(item => removeStateForItem(item.id));
+        sections.splice(confirmContext.sectionIndex, 1);
+        if(selectedRoutineId && !findRoutineItemById(selectedRoutineId)) selectedRoutineId = null;
+      }
+    } else if(confirmContext.type === "item"){
+      const block = sections[confirmContext.sectionIndex];
+      const item = block?.items[confirmContext.itemIndex];
+      if(item){
+        block.items.splice(confirmContext.itemIndex, 1);
+        removeStateForItem(item.id);
+        if(selectedRoutineId === item.id) selectedRoutineId = null;
+      }
+    }
+    saveRoutines();
+    saveState();
+    renderRoutine();
+    closeDeleteConfirm();
   }
 
   function addRoutineBlock(){
-    const sections = getRoutineSections();
-    const data = promptBlockData();
-    if(!data) return;
-    data.items = [];
-    sections.push(data);
-    saveRoutines();
-    renderRoutine();
+    openBlockModal("add");
   }
 
   function editRoutineBlock(sectionIndex){
-    const sections = getRoutineSections();
-    const block = sections[sectionIndex];
-    if(!block) return;
-    const data = promptBlockData(block);
-    if(!data) return;
-    block.title = data.title;
-    block.meta = data.meta;
-    block.start = data.start;
-    saveRoutines();
-    renderRoutine();
+    openBlockModal("edit", sectionIndex);
   }
 
   function deleteRoutineBlock(sectionIndex){
     const sections = getRoutineSections();
-    if(!sections[sectionIndex]) return;
-    if(!confirm("Delete this entire block?")) return;
-    sections[sectionIndex].items.forEach(item => removeStateForItem(item.id));
-    sections.splice(sectionIndex, 1);
-    saveRoutines();
-    saveState();
-    if(selectedRoutineId && !findRoutineItemById(selectedRoutineId)) selectedRoutineId = null;
-    renderRoutine();
+    const block = sections[sectionIndex];
+    if(!block) return;
+    openDeleteConfirm({
+      type: "block",
+      sectionIndex,
+      label: `Delete block “${block.title || "Untitled"}”?`,
+    });
   }
 
   function addRoutineItem(sectionIndex){
-    const sections = getRoutineSections();
-    const block = sections[sectionIndex];
-    if(!block) return;
-    const item = promptRoutineItem();
-    if(!item) return;
-    block.items.push({
-      ...item,
-      id: uid(),
-      subTasks: [],
-    });
-    saveRoutines();
-    renderRoutine();
+    openItemModal("add", sectionIndex);
   }
 
   function editRoutineItem(sectionIndex, itemIndex){
-    const sections = getRoutineSections();
-    const block = sections[sectionIndex];
-    if(!block || !block.items[itemIndex]) return;
-    const item = promptRoutineItem(block.items[itemIndex]);
-    if(!item) return;
-    const target = block.items[itemIndex];
-    target.text = item.text;
-    target.tag = item.tag;
-    target.time = item.time;
-    target.notes = item.notes;
-    saveRoutines();
-    renderRoutine();
+    openItemModal("edit", sectionIndex, itemIndex);
   }
 
   function deleteRoutineItem(sectionIndex, itemIndex){
     const sections = getRoutineSections();
     const block = sections[sectionIndex];
-    if(!block || !block.items[itemIndex]) return;
-    if(!confirm("Delete this routine item?")) return;
-    const removed = block.items.splice(itemIndex, 1)[0];
-    if(removed){
-      removeStateForItem(removed.id);
-      if(selectedRoutineId === removed.id) selectedRoutineId = null;
-    }
-    saveRoutines();
-    saveState();
-    renderRoutine();
+    const item = block?.items[itemIndex];
+    if(!item) return;
+    openDeleteConfirm({
+      type: "item",
+      sectionIndex,
+      itemIndex,
+      label: `Delete “${item.text || "Routine item"}”?`
+    });
   }
 
   function toggleRoutineSkip(itemId){
@@ -1993,6 +2237,49 @@
       }
       addSubTask(text);
       subTaskInput.value = "";
+    });
+  }
+
+  if(modalForm){
+    modalForm.addEventListener("submit", handleModalSubmit);
+  }
+
+  if(modalCancelBtn){
+    modalCancelBtn.addEventListener("click", () => closeModal());
+  }
+
+  if(modalOverlay){
+    modalOverlay.addEventListener("click", (event) => {
+      if(event.target === modalOverlay){
+        closeModal();
+      }
+    });
+  }
+
+  document.addEventListener("keydown", (event) => {
+    if(event.key === "Escape"){
+      if(modalOverlay && !modalOverlay.classList.contains("hidden")){
+        closeModal();
+      }
+      if(confirmOverlay && !confirmOverlay.classList.contains("hidden")){
+        closeDeleteConfirm();
+      }
+    }
+  });
+
+  if(confirmDangerBtn){
+    confirmDangerBtn.addEventListener("click", handleConfirmDelete);
+  }
+
+  if(confirmCancelBtn){
+    confirmCancelBtn.addEventListener("click", () => closeDeleteConfirm());
+  }
+
+  if(confirmOverlay){
+    confirmOverlay.addEventListener("click", (event) => {
+      if(event.target === confirmOverlay){
+        closeDeleteConfirm();
+      }
     });
   }
 
